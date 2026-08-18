@@ -4,8 +4,8 @@
 **Assignment:** PM course · Week 5 · Cohort 8 · Case Study 4
 **Deliverable:** Diamond 1 output (Discover → Define) · Monday EOD checkpoint
 **Deadline (assignment):** 26 August 2026
-**Version:** Draft v1 · 18 August 2026
-**Status:** Persona, problem, and task-path LOCKED (v2). Quantitative validation `[survey pending]`.
+**Version:** Draft v1.1 · 18 August 2026
+**Status:** Persona, problem, and task-path LOCKED (v2). Quantitative validation: **first survey wave patched in (n=6, directional)**; markers remain where more responses are still needed.
 
 > **Scope of this document.** This is the *Problem Space* PRD — Discovery through problem
 > definition, in the VMS Discovery structure (problem space · research · personas · pain
@@ -13,6 +13,13 @@
 > design, funnel, and metrics plan are Diamond 2 and live in a separate Product PRD.
 > `[survey pending]` marks every place quantitative validation will slot in; none of these
 > are blockers to the build — the persona, task-path, and loop are settled.
+>
+> **Survey wave 1 patched in (18 Aug, n=6).** First responses to *"How professionals learn to
+> use AI at work — 2-min survey"* are folded into Sections 2.4, 4, and 6 below, tagged
+> `[survey n=6]`. **This is a small, non-random sample** (analyst-heavy; includes one
+> self-identified coder and one CA, both near the anti-persona line) — read every figure as
+> directional, not statistical. Markers stay `[survey pending — more responses]` where a
+> larger wave is still needed for confidence.
 
 ---
 
@@ -151,23 +158,44 @@ into countable evidence and doubles as the task-path picker. Where possible we'v
 *other populations* (mostly enterprise/India surveys + OpenAI usage data), not our recruited
 audience, so each gap keeps a `[confirm own survey]` marker:
 - **Q4 — pain rank:** *proxy* — ~55% of people "don't know where to start" with AI (Newsweek);
-  time/momentum ≈58–59% (Skillsoft). P1 corroborated as top-tier; jargon (P2) remains
-  qualitative-only. `[confirm rank order + jargon with own survey Q4]`
+  time/momentum ≈58–59% (Skillsoft). **`[survey n=6]`:** navigation is the top blocker, but the
+  dominant flavor is *"couldn't tell which course/tool was actually worth it"* (3/6) slightly
+  ahead of *"didn't know where to start"* (2/6) — i.e. the pain reads as trust/evaluation
+  (P6-adjacent) as much as pure navigation. **Jargon (P2) drew zero picks** (it may not have
+  been offered as an option, so this neither confirms nor kills it — it stays qualitative-only).
+  `[confirm rank order + test jargon explicitly, survey pending — more responses]`
 - **Q5/Q6 — task:** *strong proxy* — OpenAI/NBER (1M+ convos) puts **writing at ~40% of work
   usage**, mostly editing/refining existing text — directly backs the hardcoded "weak prompt →
-  structured, usable output" task and the "write/draft work content" option. "Build a tool" is
-  a minority activity in usage data. `[confirm + watch "build a tool" upside, own survey Q5/Q6]`
+  structured, usable output" task. **`[survey n=6]` — TENSION, watch this:** Q6 top pick was
+  **"automate a repetitive task" (4/6)**; "analyze/summarize" and "research faster" got 1 each;
+  **"write/draft work content" — the hardcoded task — drew 0.** Open-ended Q5 echoes automation
+  ("reduce manual work," "automate repetitive tasks," "MIS file mapping"). This is Assumption A3
+  firing: *this recruited sample* wants automation, not writing. Countervailing: n=6 is tiny and
+  automation-leaning; "automate a repetitive task" is far harder to deliver as a clean <10-min
+  pre-signup win than a writing task; and the task was chosen for universality + single NL
+  surface. **Not a pivot on this evidence — logged as a live tension to re-check as responses
+  land.** `[re-rank task on larger wave; watch automation-vs-writing gap, survey pending — more responses]`
 - **Q7/Q8 — format:** *proxy* — long courses complete at ~5–15%; 5–15 min daily fits the
-  working-adult constraint (microlearning research) → backs byte-sized daily. Inline quiz (Q8)
-  stays qualitative-only. `[confirm demand with own survey Q7/Q8]`
+  working-adult constraint (microlearning research) → backs byte-sized daily. **`[survey n=6]`
+  — confirmed:** "10–15 min daily bites" won **5/6** over a long weekend session; inline
+  quiz/activity (Q8) drew **6/6 Yes-or-Maybe (4 Yes, 2 Maybe, 0 No)**. Both format bets hold.
 - **Q9/Q10/Q11 — WTP:** *partial proxy* — subscription fatigue favors per-use-case shape; 76%
   of Indian professionals intend to invest in training in 2026 (Simplilearn) → WTP exists but
   is trust-gated. **The "trustworthy, not scammy" price point is un-proxyable** (India course
   fees ₹35k–₹1.5L are the *distrusted* ceiling our persona is burned by, not our price).
-  `[trustworthy price MUST come from own survey Q11 + fake-door]`
+  **`[survey n=6]`:** payment shape leans **"free first, then decide" (4/6)** — validates the
+  proof-first free win — with **monthly subscription (2/6)** the next choice and no clean vote
+  for per-use (one text answer asked for usage-based lowest-token pricing). Named fair prices
+  clustered **₹999 / ₹1000–1500 / ₹2000 / ₹2000** — i.e. **~₹1000–2000/mo, well above the
+  ₹199–399 floated in the handoff and comfortably clear of the ₹150–500 COGS worry.** Caveat:
+  only 2/6 had "felt burned," so this wave is less trust-scarred than the interview cohort — the
+  price may soften on a more representative sample. Still trust-gated; fake-door confirms.
+  `[trustworthy price still needs fake-door + larger survey wave]`
 - **Q3 — segment conversion:** *size only* — 85% of Indian pros use AI but only 26% feel ready,
   76% willing to invest (Simplilearn) → persona pool is large and motivated. *Differential*
-  conversion (career-ROI beats mandated) is **not** proxyable. `[own survey Q3 / funnel only]`
+  conversion (career-ROI beats mandated) is **not** proxyable. **`[survey n=6]`:** too small and
+  self-selected (survey-takers are already engaged) to read segment conversion. `[own survey Q3
+  at scale / funnel only]`
 
 ---
 
@@ -214,11 +242,14 @@ Keeping these out is what keeps MVP scope tight.
 
 ## 4. Pain Points
 
-Ranked by strength of signal across primary + secondary. `[survey Q4 will re-rank at scale.]`
+Ranked by strength of signal across primary + secondary. **`[survey n=6]`: navigation (P1)
+confirmed top blocker — but split as "can't tell which is worth it" (3/6, trust-adjacent) ≈
+"where do I start" (2/6); jargon (P2) drew 0 picks but may not have been an option, so its rank
+is unconfirmed either way.** `[survey pending — more responses to re-rank at scale.]`
 
 | # | Pain | Evidence | Severity |
 |---|------|----------|----------|
-| P1 | **"Where do I start / what next?"** — no clarity on first step, next step, or payoff; tool-choice paralysis. | T1 (strongest, most repeated); named by architect, SAP switcher, HRMS pro. **Proxy: ~55% "don't know where to start" (Newsweek).** | Hook |
+| P1 | **"Where do I start / what next?"** — no clarity on first step, next step, or payoff; tool-choice paralysis. | T1 (strongest, most repeated); named by architect, SAP switcher, HRMS pro. **Proxy: ~55% "don't know where to start" (Newsweek). `[survey n=6]`: top blocker — "can't tell which tool/course is worth it" 3/6, "where to start" 2/6.** | Hook |
 | P2 | **Jargon wall in the first 15 min** — non-technical learners bounce before any value. | T2; wealth manager closed video at 15 min; mentor on bootcamps. | High / actionable |
 | P3 | **Shallow usage** — prompt-in/output-out; unaware of what's possible after the prompt. | T7; corroborated by 86% "not full potential," ~10% proficient (secondary). | **The core opportunity** |
 | P4 | **Learned it but couldn't apply it → forgot** — theory with no place to land. | T4; SEO specialist, HR; Xerox 13%→75% applied-learning gap (secondary). | High |
@@ -271,10 +302,10 @@ validation path.
 |---|------------------|-------------------|---------------|-----------------------|
 | A1 | **A daily-habit loop can substitute for live/cohort accountability.** | Duolingo mechanics; streaks +14% D14 retention; persona self-selects out of live. | **Biggest external risk.** Literature says cohort (~64%) reliably beats self-paced (~48%) on completion; our substitution isn't independently proven outside language apps. | Frame as a deliberate bet, not a settled fact. Instrument retention hard; the 40–50-user test measures exactly this. |
 | A2 | **On-demand AI tutor resolves the mentorship-vs-no-time tension.** | T5; AI tutoring RCTs show strong effect *when* it has pacing + immediate feedback. | Pure-AI tutoring underperforms hybrid AI+human; and it's scope-creep that could sink a one-week MVP. | Treat as stretch / day-2, **not** day-1 core. Drills + checkpoints ship a coherent MVP without it. |
-| A3 | **The hardcoded task ("weak prompt → structured, usable output") is the right universal first win.** | Shared across all target roles; single natural-language surface; clean <10-min win; attacks the shallow-usage gap directly. **Now backed by OpenAI/NBER usage data: writing ≈40% of work AI use, mostly editing/refining text.** | Users might most want "build a tool" or a domain-specific task instead. | `[survey Q5/Q6]` confirms; usage data already flags "build a tool" as a *minority* activity. Task is hardcoded, swappable if the survey overturns it. |
+| A3 | **The hardcoded task ("weak prompt → structured, usable output") is the right universal first win.** | Shared across all target roles; single natural-language surface; clean <10-min win; attacks the shallow-usage gap directly. **Backed by OpenAI/NBER usage data: writing ≈40% of work AI use, mostly editing/refining text.** | Users might most want automation or a domain-specific task instead. | **`[survey n=6]` — this assumption is now under active tension.** Q6 top pick was **"automate a repetitive task" (4/6)**; **"write/draft content" drew 0.** Countervailing: n=6 & automation-leaning sample; automation is much harder to deliver as a clean <10-min pre-signup win; task chosen for universality. **Holding the writing task on current evidence, flagged as the top thing to re-check on a larger wave.** Task is hardcoded and swappable if the signal persists. `[survey pending — more responses]` |
 | A4 | **AI-judged real-task checkpoints work well enough for an MVP.** | Enables applied grading at scale. | AI-judging may wobble on open-ended real tasks (the fuzzy half of the design). | Auto-graded drills alone still ship a coherent MVP — the checkpoint is the upgrade, not the floor. |
 | A5 | **Persona evidence covers non-technical switchers specifically.** | 12-round is broad; secondary leans toward the in-role frame. | Switcher sub-segment evidence is still light (one full capture, AV, was finance→SAP). | 2–3 more targeted interviews + `[survey Q3]`; not re-centering on switchers on current evidence. |
-| A6 | **Willingness to pay is real, conditional, and per-use-case shaped.** | T6/T8; subscription-fatigue signal favors one-time/per-case; **76% of Indian pros intend to invest in training in 2026 (Simplilearn)** → WTP exists. | Burned buyers may not convert without brand trust; India course fees ₹35k–₹1.5L are the *distrusted* ceiling our persona is burned by, not our price. | Fake-door WTP test, proof-first free win. **Trustworthy price point is un-proxyable — own survey Q11 + fake-door only.** `[survey Q9–Q11]` |
+| A6 | **Willingness to pay is real, conditional, and ~~per-use-case shaped~~ subscription-shaped after a free first win.** | T6/T8; **76% of Indian pros intend to invest in training in 2026 (Simplilearn)** → WTP exists. **`[survey n=6]` revises the shape:** payment leans **"free first, then decide" (4/6)** then **monthly subscription (2/6)**, with *no* clean per-use vote — this **resolves the docs' per-use-vs-subscription contradiction toward subscription-after-free-trial.** | Burned buyers may not convert without brand trust; India course fees ₹35k–₹1.5L are the *distrusted* ceiling, not our price. | Fake-door WTP test, proof-first free win. **`[survey n=6]` named prices cluster ₹1000–2000/mo (₹999/₹1000–1500/₹2000/₹2000) — above the ₹199–399 floated and clear of the ₹150–500 COGS.** Caveat: only 2/6 were "burned," so price may soften on a more scarred sample. `[trustworthy price still needs fake-door + larger wave]` |
 
 ---
 
@@ -296,7 +327,9 @@ and move into Diamond 2 (solution design → MVP → 40–50 users → funnel + 
 
 ## 8. What's next (bridge to Diamond 2)
 
-- Patch `[survey pending]` values into Sections 2.4, 4, and 6 as results land.
+- **Survey wave 1 (n=6) patched into Sections 2.4, 4, 6** (18 Aug). Keep patching as more
+  responses land; the open items are: re-rank Q4 pain order + test jargon explicitly, resolve
+  the **automation-vs-writing task tension (A3)**, and firm up the trustworthy price.
 - 2–3 more targeted interviews on the non-technical-switcher sub-segment (A5).
 - Product PRD: MVP scope (one persona · one first-win task · one loop, per the brief's
   anti-sprawl rule), the funnel (acquisition → activation → D1/D2 return → checkpoint →
@@ -310,4 +343,6 @@ and move into Diamond 2 (solution design → MVP → 40–50 users → funnel + 
 - `edtech-primary-research.md` — full 12-interview synthesis (themes T1–T8).
 - `secondary-research-round2.md` — 11-section desk research stress-testing the hypothesis.
 - `validation-survey.md` — 12-Q survey / task-path picker (`[survey pending]` source).
+- `How professionals learn to use AI at work — 2-min survey (Responses).xlsx` — survey wave 1
+  raw responses (n=6, 18 Aug); source for all `[survey n=6]` tags above.
 - `interview-capture-template.xlsx` — Interview 1 (AV) real capture; template for the rest.
