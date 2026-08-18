@@ -3,8 +3,8 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 18 August 2026 (Session 2)
-**Current phase:** Diamond 1 — Define nearly done. Persona + problem + task-path LOCKED (v2). Next: Problem Space PRD.
+**Handoff written:** 17 August 2026 · **Updated:** 18 August 2026 (Session 3)
+**Current phase:** Diamond 1 — Define COMPLETE (Problem Space PRD drafted). Now in Diamond 2 — solution convergence started; engine + economics decisions in progress, 4 open forks pending (see Section 0.5).
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -103,6 +103,68 @@ Draft the **Problem Space PRD** (Monday EOD checkpoint) off Section 0, in the VM
 structure (problem space · research · personas · pain points · insights · assumptions). Use
 `[survey pending]` placeholders where quantitative validation will slot in. The task-path,
 persona, and loop are all settled — nothing blocks the PRD or the build.
+
+---
+
+## 0.5 SESSION 3 — Solution convergence + economics grill (18 Aug)
+
+**Status:** Diamond 1 Define COMPLETE — Problem Space PRD drafted (`problem-space-prd.md`).
+Repo now on GitHub (`kunalagarwal0210/Edtech-Research`; pushed via `gh` as personal account,
+credential helper scoped local to the repo so the work machine's global git is untouched).
+Validation survey floated for responses. Entering Diamond 2 (solution design). Metric
+thresholds (the "X%" blanks in the success test) deliberately **deferred** — "build & decide
+from baseline later." Not a blocker.
+
+### Engine decision — RESOLVED in principle
+- First-win engine = **live LLM on rails**, powered by a **free-tier API** (Google Gemini AI
+  Studio / Groq Llama) — **no credit card, ~$0.** Math: ~50 users × ~10–15 calls over the week
+  ≈ 500–750 calls total; Gemini free tier = ~1,500 req/day → a fraction of a single day's
+  quota across the whole test. The "no paid API / too costly" constraint **dissolves** at
+  case-study scale.
+- Caveats: per-minute rate limits (15 RPM Gemini / 30 RPM Groq) → light request queue if many
+  users hit it in the same minute (e.g. a live class demo); Gemini *free* tier may train on
+  prompts → steer users to non-sensitive tasks or use Groq; add a "don't paste confidential
+  info" notice regardless.
+
+### BYO-account (ChatGPT Go / Claude Pro) — REJECTED (not viable)
+- Consumer subscriptions ≠ API access. **Anthropic banned** subscription OAuth in third-party
+  apps (Feb–Apr 2026, server-enforced). OpenAI "Sign in with ChatGPT" is **identity-only**;
+  using a plan's model quota in an external app is a first-party Codex preview / unofficial
+  reverse-engineered hack (fragile, ToS-risky). Not a foundation for a graded MVP.
+- Only legit way to use a user's own sub = **copy-paste bridge** (app builds the structured
+  prompt → user runs it in their own ChatGPT/Claude → pastes result back). $0, ToS-safe, but a
+  copy-paste seam + can't inspect/grade output tightly. Treat as an **optional secondary
+  toggle, not core.**
+
+### Economics / viability grill — key findings (feed a Business Model section)
+- **Cost = engagement = success metric.** Free tier hides that COGS scales with the daily
+  usage the loop is designed to maximize. At real engagement + a good model, COGS plausibly
+  **₹150–500/user/mo** → can exceed a burned persona's WTP.
+- **Monetization contradiction:** docs lock "per-use-case" WTP (decision 10 / A6) but the
+  product is a daily-habit **subscription** loop. Pick one → **recommend subscription** (matches
+  the streak/return loop).
+- **Success-is-churn:** teaching prompting well → user graduates to free ChatGPT; retention
+  story *after* the skill sticks is unproven. **Platform-as-competitor:** base models coach
+  prompting natively → thin-wrapper defensibility risk.
+- **Likely resolution:** consumer daily-habit app = **wedge / engagement proof**; real revenue
+  = **B2B / Team per-seat** (has budget, clears COGS). Consumer freemium: free tier (cheap
+  model for drills, cached hardcoded content, capped tutor) + a modest **subscription**
+  (₹199–399/mo) tested via fake-door.
+- **Case-study scope reminder:** the deliverable only needs a **fake-door WTP test + a
+  defensible business hypothesis**, NOT solved economics. Do **not** ship the "per-use-case"
+  line alongside a subscription loop — that contradiction is the gradeable crack.
+
+### OPEN decisions (pending Kunal) — next session picks up here
+1. **Engine confirm** — free-tier live LLM on rails (rec) + optional copy-paste bridge?
+2. **Build capacity** — AI-assisted custom code (Next.js/Vercel, rec) vs hand-coded vs no-code?
+3. **Content depth** — lean (Day-0 win + 3 drills + 1 checkpoint, rec) vs full 5-day path?
+4. **Business model** — (a) subscription vs per-use [rec: subscription]; (b) consumer-as-business
+   vs consumer-as-wedge-to-B2B [rec: wedge]; (c) lowest believable price for the burned persona
+   that still survives the ₹150–500 COGS?
+
+### Not yet started
+Solution / Product PRD (MVP scope · funnel · event-tracking plan · growth loop). Blocked only
+on the 4 open decisions above.
 
 ---
 
