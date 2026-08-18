@@ -1,0 +1,13 @@
+# Claude Code local settings
+.claude/
+
+# LibreOffice / Excel lock files
+.~lock.*#
+~$*
+
+# Session transcript (raw dump — superseded by the handoff doc)
+Date*transcript.txt
+
+# OS cruft
+Thumbs.db
+.DS_Store
