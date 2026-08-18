@@ -3,8 +3,10 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 18 August 2026 (Session 3)
-**Current phase:** Diamond 1 — Define COMPLETE (Problem Space PRD drafted). Now in Diamond 2 — solution convergence started; engine + economics decisions in progress, 4 open forks pending (see Section 0.5).
+**Handoff written:** 17 August 2026 · **Updated:** 18 August 2026 (Session 4)
+**Current phase:** Diamond 2 — **Solution DEFINED.** Both PRDs drafted (`problem-space-prd.md` +
+`solution-prd.md`); the 4 open forks from Section 0.5 are all resolved via an 11-decision
+grilling session (see Section 0.6). Next: **build** the MVP. Nothing blocks the build.
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -154,17 +156,55 @@ from baseline later." Not a blocker.
   defensible business hypothesis**, NOT solved economics. Do **not** ship the "per-use-case"
   line alongside a subscription loop — that contradiction is the gradeable crack.
 
-### OPEN decisions (pending Kunal) — next session picks up here
-1. **Engine confirm** — free-tier live LLM on rails (rec) + optional copy-paste bridge?
-2. **Build capacity** — AI-assisted custom code (Next.js/Vercel, rec) vs hand-coded vs no-code?
-3. **Content depth** — lean (Day-0 win + 3 drills + 1 checkpoint, rec) vs full 5-day path?
-4. **Business model** — (a) subscription vs per-use [rec: subscription]; (b) consumer-as-business
-   vs consumer-as-wedge-to-B2B [rec: wedge]; (c) lowest believable price for the burned persona
-   that still survives the ₹150–500 COGS?
+### OPEN decisions — ALL RESOLVED in Session 4 (see Section 0.6)
+1. ✅ **Engine** — free-tier live LLM (Gemini AI Studio primary, Groq overflow), ~$0.
+2. ✅ **Build** — AI-assisted Next.js/Vercel.
+3. ✅ **Content depth** — lean (Day-0 win + 3 drills + 1 checkpoint).
+4. ✅ **Business model** — subscription; consumer = wedge, B2B later; ₹399/mo fake-door test.
+
+---
+
+## 0.6 SESSION 4 — Solution DEFINED via grilling (18 Aug)
+
+**Status:** Diamond 2 solution convergence COMPLETE. Ran an 11-decision `/grilling` session
+(4 rounds, walking a design tree). All decisions locked; full spec in `solution-prd.md`.
+Next session = **build.** Nothing blocks it.
+
+### The solution in one line
+A **guided-rails web app** that walks a non-technical professional from a weak prompt to a
+real, usable AI result on their **own task in ~10 minutes** (jargon-free, pre-signup), then
+holds the habit with a **byte-sized daily loop** (3 drills + 1 AI-judged real-task checkpoint).
+
+### The 11 locked solution decisions
+| # | Decision | Choice |
+|---|----------|--------|
+| Q1 | Product form | Guided-rails web app (not chat / not content-library / not extension) |
+| Q2 | First-win task | **Bring-your-own** real task; writing (weak→structured prompt) is the scaffolded default — hedges the A3 automation tension |
+| Q3 | Scope | Lean: pre-signup win + 3 drills + 1 checkpoint |
+| Q4 | Engine | Gemini AI Studio free tier (Groq overflow), ~$0, "no confidential info" notice |
+| Q5 | Build | AI-assisted Next.js on Vercel |
+| Q6 | Auth | No wall through first win → Google OAuth at the win moment |
+| Q7 | Day-0 flow | 8 steps: land → ask task first → weak attempt → jargon-free diagnosis → rebuild structured prompt → live run → inline check → win → signup |
+| Q8 | Daily loop | 3 drills (one prompt lever each) + streak + AI-judged checkpoint; progress = "tasks you can now do"; drills-only fallback |
+| Q9 | Acquisition + growth | Manual recruiting off the **28 captured leads** + one instrumented "win card" |
+| Q10 | Metrics | PostHog free tier; headline = `first_win_completed` (pre-signup activation); full event map; thresholds from baseline |
+| Q11 | Business | Post-checkpoint subscription fake-door, single **₹399/mo**, click = WTP intent |
+
+### Explicitly OUT of scope (creep guard)
+On-demand AI tutor (build grading, not a tutor — feedback outranked tutor 10/37 vs 6/37 in
+Survey B) · full 5-day path · second growth mechanic · live/cohort features · solved economics ·
+per-use pricing.
+
+### Carried-forward open items (NOT blockers)
+1. **Automation-vs-writing** first-win default (A3) — resolve from live-test behavior.
+2. **AI-grading reliability** at the checkpoint (A4) — drills-only fallback ready.
+3. **Trustworthy price** — ₹399 is a test, not a finding.
+4. **Handoff↔PRD contradiction** — decision 10 below still says "per-use-case"; the PRDs now
+   lock **subscription**. Reconcile when priced. *(Deliberately left for Kunal to decide.)*
 
 ### Not yet started
-Solution / Product PRD (MVP scope · funnel · event-tracking plan · growth loop). Blocked only
-on the 4 open decisions above.
+The build itself (scaffold → day-0 flow → loop → checkpoint → instrumentation → landing →
+recruit → soft launch → baseline thresholds → iterate). See `solution-prd.md` §6.
 
 ---
 
