@@ -3,10 +3,11 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 18 August 2026 (Session 4)
-**Current phase:** Diamond 2 — **Solution DEFINED.** Both PRDs drafted (`problem-space-prd.md` +
+**Handoff written:** 17 August 2026 · **Updated:** 19 August 2026 (Session 5)
+**Current phase:** Diamond 2 — **BUILD STARTED.** Both PRDs drafted (`problem-space-prd.md` +
 `solution-prd.md`); the 4 open forks from Section 0.5 are all resolved via an 11-decision
-grilling session (see Section 0.6). Next: **build** the MVP. Nothing blocks the build.
+grilling session (see Section 0.6). The MVP build is now underway on branch `edtech-mvp-build`
+via a written implementation plan + Superpowers subagent-driven execution (see Section 0.7).
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -205,6 +206,48 @@ per-use pricing.
 ### Not yet started
 The build itself (scaffold → day-0 flow → loop → checkpoint → instrumentation → landing →
 recruit → soft launch → baseline thresholds → iterate). See `solution-prd.md` §6.
+
+---
+
+## 0.7 SESSION 5 — Build kickoff (19 Aug)
+
+**Status:** Diamond 2 build STARTED. Executing `solution-prd.md` §6 through a written,
+task-by-task implementation plan using **Superpowers subagent-driven development** (a fresh
+implementer subagent per task → task review → fix loop → final whole-branch review). All build
+work is on branch **`edtech-mvp-build`** (branched off `main`; not yet merged).
+
+### Plan + recovery map
+- **Implementation plan:** `docs/superpowers/plans/2026-08-19-edtech-mvp.md` — 13 tasks
+  (1, 1.5, 2–12), risk-ordered: engine spike + pre-signup hero flow first, fuzzy AI-judged
+  checkpoint late with a drills-only fallback flag.
+- **SDD ledger (source of truth for build progress):** `.superpowers/sdd/2026-08-19-edtech-mvp/progress.md`
+  (git-ignored scratch; holds the conflict scan, per-task completions, and every ruling).
+
+### Stack (locked in the plan)
+Next.js 15 (App Router) + TypeScript + Tailwind v4, in a **`web/`** subfolder (research docs
+stay at repo root). Engine: **Gemini AI Studio free tier** (`gemini-2.0-flash`), ~$0. Auth + DB:
+**Supabase** (Google OAuth + Postgres). Analytics: **PostHog** free tier. Hosting: **Vercel**.
+Tests: **Vitest**.
+
+### Progress
+- ✅ **Task 1** — scaffold + Vitest + smoke test (commit `64c6425`; spec ✅, quality approved).
+- 🔨 **Task 1.5** — design foundation (theme tokens, 4 shared primitives, locked `HERO` copy) —
+  in progress at time of writing.
+
+### Prerequisites pending (HUMAN — needed from Task 2 onward)
+Drop these into `web/.env.local` (git-ignored, never committed): `GEMINI_API_KEY`; Supabase
+`NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY`;
+PostHog `NEXT_PUBLIC_POSTHOG_KEY` + `NEXT_PUBLIC_POSTHOG_HOST`. Vercel dashboard import
+(Root Directory = `web`) is a deferred human step; no live URL exists yet.
+
+### Open build rulings (full text in the ledger)
+1. Vercel dashboard import is a human step — agent scaffolds/commits, defers the import.
+2. `ConfidentialNotice` component pulled forward into Task 1.5 (StepShell depends on it; was Task 4).
+3. Vitest CJS/ESM cosmetic warning deferred to final review (one-line fix).
+
+### Note on the older per-use-vs-subscription contradiction
+Still unreconciled by design — decision 10 (Section 0, below) says "per-use-case"; the PRDs and
+the build lock **subscription** (₹399/mo fake-door). Left for Kunal to reconcile when priced.
 
 ---
 
