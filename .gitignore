@@ -11,3 +11,8 @@ Date*transcript.txt
 # OS cruft
 Thumbs.db
 .DS_Store
+
+# web/ (Next.js app)
+web/node_modules
+web/.next
+web/.env*.local
