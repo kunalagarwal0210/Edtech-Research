@@ -3,11 +3,13 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 19 August 2026 (Session 5)
-**Current phase:** Diamond 2 — **BUILD STARTED.** Both PRDs drafted (`problem-space-prd.md` +
-`solution-prd.md`); the 4 open forks from Section 0.5 are all resolved via an 11-decision
-grilling session (see Section 0.6). The MVP build is now underway on branch `edtech-mvp-build`
-via a written implementation plan + Superpowers subagent-driven execution (see Section 0.7).
+**Handoff written:** 17 August 2026 · **Updated:** 19 August 2026 (Session 6)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS** (Tasks 1, 1.5 done; Task 2 code done, live
+spike pending). Both PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the 4 open forks
+from Section 0.5 are all resolved via an 11-decision grilling session (see Section 0.6). The MVP
+build is underway on branch `edtech-mvp-build` via a written implementation plan + Superpowers
+subagent-driven execution (see Section 0.7). **⚠️ Paused on office laptop — Zscaler blocks the
+Gemini spike; resume at home (see Section 0.8).**
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -248,6 +250,48 @@ PostHog `NEXT_PUBLIC_POSTHOG_KEY` + `NEXT_PUBLIC_POSTHOG_HOST`. Vercel dashboard
 ### Note on the older per-use-vs-subscription contradiction
 Still unreconciled by design — decision 10 (Section 0, below) says "per-use-case"; the PRDs and
 the build lock **subscription** (₹399/mo fake-door). Left for Kunal to reconcile when priced.
+
+---
+
+## 0.8 SESSION 6 — Env wired, branch verified, Task 2 code done; live spike BLOCKED by Zscaler (19 Aug)
+
+**Where we stopped:** on the **office laptop**. Company Zscaler proxy blocks outbound calls to
+the Gemini API, so the Task 2 live "engine spike" (the go/no-go on the core bet) could not run.
+**Resume on the home laptop** — everything else is ready and pushed.
+
+### Done this session (all pushed to `edtech-mvp-build`)
+- **Env keys configured** in `web/.env.local` (git-ignored — NOT pushed, must be re-created at
+  home). Gemini key, Supabase (URL `https://jnjpdswroxsarnwdcnrp.supabase.co` derived from
+  project ref + anon + service_role), PostHog (`phc_…` key, host defaulted to **US** cloud
+  `https://us.i.posthog.com`). ⚠️ **Verify PostHog region is US** (else events silently drop).
+- **Branch verified building on this machine:** `npm ci` clean (0 vulns), `npm test`, and
+  `npm run build` all pass. Note the scaffold actually pulled **Next.js 16.3.1** (Turbopack),
+  not the "Next 15" the plan names — `create-next-app@latest` grabbed the newer major. Builds
+  clean; no action needed, plan text just runs slightly behind.
+- **Task 2 CODE complete + committed as WIP:** `web/lib/gemini/client.ts` (generateJson/
+  generateText/GeminiError), `web/lib/gemini/prompts.ts` (the 4 `*_SYSTEM` constants),
+  `web/test/gemini/client.test.ts`. **Offline tests: 8/8 passing** (4 prior + 4 new; mocked SDK,
+  no network). SDK `@google/generative-ai` installed.
+
+### NOT done — the resume checklist for home
+1. **Re-create `web/.env.local`** with the keys above (they're git-ignored, don't travel).
+2. **Run the Task 2 live engine spike** (plan Task 2, Step 7) on the unblocked home network:
+   directly call Gemini with `REBUILD_SYSTEM` + a sample weak prompt; confirm by eye the
+   structured rebuild is genuinely better + jargon-free + returns in a few seconds. **This is the
+   core-bet go/no-go.** If it works → Task 2 is truly done. If Gemini is unreachable/unusable →
+   escalate (fallback engine per Session 3, e.g. Groq).
+3. **Task 2 has NOT been through task review yet** — it was stopped mid-flow. After the spike
+   passes, dispatch the SDD task reviewer against the Task 2 diff (spec + quality), clear any
+   findings, then mark Task 2 complete.
+4. Continue Tasks 3–12 via the same subagent-driven-development flow.
+
+### Recovery notes
+- The `.superpowers/sdd/…/progress.md` ledger is **git-ignored** — it does NOT travel between
+  machines (same gotcha as Session 2's memory file). Recovery = `git log` + this section. The
+  ledger will be re-created fresh at home from git history.
+- Build progress lives on branch **`edtech-mvp-build`** (not merged to `main`).
+- Still-pending human setup for later tasks: Supabase `schema.sql` apply + Google OAuth provider
+  (Task 7), PostHog project confirmed receiving events (Task 4+), Vercel import Root Dir = `web`.
 
 ---
 
