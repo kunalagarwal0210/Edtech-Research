@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **App lives in `web/`** at the repo root. Research docs stay untouched at the repo root. Never edit the `.md` research files from build tasks.
-- **~$0 engine cost.** Gemini AI Studio **free tier** only (model `gemini-2.0-flash`). No paid API, no credit card. Groq is an optional documented overflow, NOT a build task.
+- **~$0 engine cost.** Gemini AI Studio **free tier** only (model `gemini-3.6-flash`). No paid API, no credit card. Groq is an optional documented overflow, NOT a build task.
 - **API key is server-only.** All Gemini calls go through Next.js API routes / server actions. `GEMINI_API_KEY` is never exposed to the client (no `NEXT_PUBLIC_` prefix).
 - **No signup wall before the first win.** Steps 1–8 of the day-0 flow run anonymously. Google OAuth appears only at step 8 (the win moment).
 - **Jargon-free copy rule.** All user-facing explanation copy must read at an "explain like I'm in 8th class" level. No unexplained AI jargon in diagnosis/rebuild output.
@@ -378,7 +378,7 @@ Create `web/lib/gemini/client.ts`:
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL = "gemini-2.0-flash";
+const MODEL = "gemini-3.6-flash";
 
 export class GeminiError extends Error {
   constructor(message: string, readonly cause?: unknown) {
