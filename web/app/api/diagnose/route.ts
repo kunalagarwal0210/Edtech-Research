@@ -16,7 +16,8 @@ export async function POST(request: Request) {
       user: `Task the user wants to do: ${taskText}\nTheir prompt: ${weakPrompt}`,
     });
     return NextResponse.json(result);
-  } catch {
+  } catch (e) {
+    console.error("[diagnose] failed:", e);
     return NextResponse.json({ error: "diagnosis failed" }, { status: 502 });
   }
 }

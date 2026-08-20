@@ -19,12 +19,36 @@ function stripFences(raw: string): string {
   return raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
 }
 
+const RETRY_DELAYS_MS = [800, 1600, 3200];
+
+// Gemini free tier intermittently returns 503 ("model experiencing high demand")
+// or 429 (rate limit). Both are transient — retry with backoff before giving up.
+function isTransient(e: unknown): boolean {
+  const status = (e as { status?: number })?.status;
+  if (status === 503 || status === 429) return true;
+  const msg = (e as { message?: string })?.message ?? "";
+  return /\b(503|429)\b|high demand|overloaded|rate limit/i.test(msg);
+}
+
+async function generateWithRetry(prompt: string): Promise<string> {
+  const m = model();
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await m.generateContent(prompt);
+      return res.response.text();
+    } catch (e) {
+      if (attempt < RETRY_DELAYS_MS.length && isTransient(e)) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
 export async function generateText(opts: { system: string; user: string }): Promise<string> {
   try {
-    const res = await model().generateContent(
-      `${opts.system}\n\n---\n\n${opts.user}`,
-    );
-    return res.response.text().trim();
+    return (await generateWithRetry(`${opts.system}\n\n---\n\n${opts.user}`)).trim();
   } catch (e) {
     throw new GeminiError("Gemini text generation failed", e);
   }
@@ -33,10 +57,9 @@ export async function generateText(opts: { system: string; user: string }): Prom
 export async function generateJson<T>(opts: { system: string; user: string }): Promise<T> {
   let raw: string;
   try {
-    const res = await model().generateContent(
+    raw = await generateWithRetry(
       `${opts.system}\n\nRespond with ONLY valid JSON, no prose.\n\n---\n\n${opts.user}`,
     );
-    raw = res.response.text();
   } catch (e) {
     throw new GeminiError("Gemini call failed", e);
   }

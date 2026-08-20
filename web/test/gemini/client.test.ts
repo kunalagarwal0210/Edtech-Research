@@ -36,8 +36,35 @@ describe("generateJson", () => {
     await expect(generateJson({ system: "s", user: "u" })).rejects.toBeInstanceOf(GeminiError);
   });
 
-  it("throws GeminiError when the API call rejects", async () => {
-    mockGenerateContent.mockRejectedValue(new Error("429 rate limit"));
+  it("throws GeminiError immediately on a non-transient error (no retry)", async () => {
+    mockGenerateContent.mockRejectedValue(new Error("400 bad request"));
     await expect(generateJson({ system: "s", user: "u" })).rejects.toBeInstanceOf(GeminiError);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a transient 503 and then succeeds", async () => {
+    vi.useFakeTimers();
+    const overloaded = Object.assign(new Error("503 high demand"), { status: 503 });
+    mockGenerateContent
+      .mockRejectedValueOnce(overloaded)
+      .mockResolvedValueOnce({ response: { text: () => '{"ok": true}' } });
+    const p = generateJson<{ ok: boolean }>({ system: "s", user: "u" });
+    await vi.runAllTimersAsync();
+    await expect(p).resolves.toEqual({ ok: true });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it("gives up after exhausting retries on a persistent transient error", async () => {
+    vi.useFakeTimers();
+    mockGenerateContent.mockRejectedValue(
+      Object.assign(new Error("429 rate limit"), { status: 429 }),
+    );
+    const p = generateJson({ system: "s", user: "u" });
+    const assertion = expect(p).rejects.toBeInstanceOf(GeminiError);
+    await vi.runAllTimersAsync();
+    await assertion;
+    expect(mockGenerateContent).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
+    vi.useRealTimers();
   });
 });

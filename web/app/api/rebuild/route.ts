@@ -16,7 +16,8 @@ export async function POST(request: Request) {
       user: `Task the user wants to do: ${taskText}\nTheir weak prompt: ${weakPrompt}`,
     });
     return NextResponse.json(result);
-  } catch {
+  } catch (e) {
+    console.error("[rebuild] failed:", e);
     return NextResponse.json({ error: "rebuild failed" }, { status: 502 });
   }
 }
