@@ -16,3 +16,29 @@ export const HERO = {
     { key: "win", title: "You just did it. Look at the difference." },
   ],
 } as const;
+
+/**
+ * New visual microcopy introduced by the Plainly design (brand, coach rail,
+ * trust pills). The research-locked strings above are the source of truth for
+ * headlines/step titles; these are presentational additions only.
+ */
+export const UI = {
+  eyebrow: "AI, made plain · no jargon",
+  trustPills: ["No signup to start", "Free to try", "~10 minutes"],
+  /** short coaching line shown in the guide rail, keyed by step */
+  coach: {
+    task: "Tell me one real task. Anything you'd normally hand off.",
+    weak: "Just write it the way you normally would — I'll take a look.",
+    diagnosis: "Good news — this is very fixable. Here's what's missing.",
+    rebuild: "Same request — now with a clear role, context, format and limits.",
+    run: "Here's the real output from your improved prompt.",
+    check: "One quick check to lock it in — no wrong answers.",
+    win: "You did it — here's the difference you just made.",
+  },
+  /** optional helper line under the step title */
+  lede: {
+    task: "Pick an example or describe your own task.",
+    weak: "Don't overthink it — just write what you'd ask an AI tool.",
+    check: "Choose the answer that feels most right to you.",
+  },
+} as const;

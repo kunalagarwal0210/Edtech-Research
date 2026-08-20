@@ -3,20 +3,29 @@ import type { ButtonHTMLAttributes } from "react";
 type ButtonProps = {
   variant?: "primary" | "ghost";
   loading?: boolean;
+  block?: boolean;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
+/* Duolingo-style pressable button: a 4px darker bottom edge that presses down
+   on :active. Primary is the indigo fill; ghost is a bordered outline. */
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-full font-extrabold select-none " +
+  "transition-[transform,border-bottom-width,background,border-color] duration-75 " +
+  "disabled:cursor-not-allowed disabled:opacity-55";
 
 const variants = {
-  primary: "bg-accent text-accent-fg hover:opacity-90",
+  primary:
+    "bg-primary text-white text-base px-[30px] py-[14px] border-b-4 border-edge " +
+    "active:translate-y-[3px] active:border-b active:[border-bottom-width:1px]",
   ghost:
-    "bg-transparent text-text border border-border hover:bg-surface",
+    "bg-transparent text-primary text-base px-6 py-3 border-2 border-border " +
+    "hover:border-primary hover:bg-primary/5",
 };
 
 export function Button({
   variant = "primary",
   loading = false,
+  block = false,
   disabled,
   className = "",
   children,
@@ -24,7 +33,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`${base} ${variants[variant]} ${className}`}
+      className={`${base} ${variants[variant]} ${block ? "w-full" : ""} ${className}`}
       disabled={disabled || loading}
       {...rest}
     >
