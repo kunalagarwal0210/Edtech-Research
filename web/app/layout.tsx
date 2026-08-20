@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { appName } from "@/lib/meta";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -10,7 +11,10 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Get your first real AI win in 10 minutes",
+  title: {
+    default: `${appName()} — Get your first real AI win in 10 minutes`,
+    template: `%s · ${appName()}`,
+  },
   description:
     "Bring one real work task. We'll take you from a rough idea to a result you can actually use — no jargon, no signup first.",
 };
