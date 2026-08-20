@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "failed to persist progress" }, { status: 500 });
   }
 
-  await supabase.from("progress").upsert({
+  const { error: progressError } = await supabase.from("progress").upsert({
     user_id: user.id,
     drill1: false,
     drill2: false,
@@ -34,6 +34,10 @@ export async function POST(request: Request) {
     last_active: new Date().toISOString().slice(0, 10),
     checkpoint_passed: false,
   });
+
+  if (progressError) {
+    return NextResponse.json({ error: "failed to persist progress" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }
