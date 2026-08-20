@@ -9,6 +9,7 @@ import { HERO } from "@/lib/copy";
 import { writeAnon } from "@/lib/state/localProgress";
 import { track } from "@/lib/analytics/track";
 import { Ev } from "@/lib/analytics/events";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 
 type Step = "task" | "weak" | "diagnosis" | "rebuild" | "run" | "check" | "win";
 
@@ -133,8 +134,11 @@ export default function StartPage() {
     setStep("win");
   }
 
-  function handleSaveProgress() {
-    // TODO(Task 7): wire Google OAuth signup here.
+  async function handleSaveProgress() {
+    await getBrowserSupabase().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
   }
 
   if (step === "task") {
@@ -286,7 +290,6 @@ export default function StartPage() {
         <p className="mt-1 whitespace-pre-wrap text-sm text-text">{output}</p>
       </Card>
       <p className="text-sm text-muted">You just went from a rough idea to something you can actually use.</p>
-      {/* TODO(Task 7): this CTA attaches Google OAuth signup; placeholder for now. */}
       <Button onClick={handleSaveProgress}>Save my progress</Button>
     </StepShell>
   );
