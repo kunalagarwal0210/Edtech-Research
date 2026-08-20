@@ -3,9 +3,11 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 10)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS; Plainly design PORTED (committed), needs live
-visual + end-to-end verification on the home network, then resume at Task 8.**
+**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 11)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS; Plainly design PORTED + live-verified end-to-end
+on the home network. TWO engine fixes committed (`7deaa5e`). BLOCKED on an engine decision: the
+`gemini-3.6-flash` free tier has a HARD 20-requests/day cap — unworkable for 40–50 users. Must switch
+model / wire Groq / enable billing BEFORE any real user test. Then resume at Task 8.** (See Section 0.12.)
 Tasks 1–7 DONE and the full day-0 first-win flow was **live-verified end-to-end** (Gemini, PostHog
 funnel, Google OAuth + Supabase persistence all confirmed on real infra — see Section 0.9). Both
 PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are
@@ -502,6 +504,76 @@ anon localStorage — and `/dashboard` (Task 8). The port lifted only the visual
   it. Weigh streaming / faster model / honest progress cue at launch prep.
 - **Gotchas** — `.env.local` + the `.superpowers/…/progress.md` ledger are git-ignored (don't travel);
   Next 16 refuses a second dev server on the same dir (kill orphans holding port 3000).
+
+---
+
+## 0.12 SESSION 11 — Port live-verified end-to-end; 2 engine fixes committed; BLOCKED on free-tier 20/day cap (20 Aug, home)
+
+**Where we are now:** on the **home network** the Session-10 Plainly port was finally run past "Diagnose
+it" against live Gemini. The full pre-signup first-win flow **works end-to-end** — but the process
+surfaced (a) a core-payoff bug, now fixed, and (b) a hard engine constraint that **blocks the real user
+test**. All fixes are committed to `edtech-mvp-build` (`7deaa5e`), not yet merged.
+
+### Live end-to-end verification (this session)
+- `git pull` (`54f2bd7 → 9b71bd3`, fast-forward). `.env.local` present, `node_modules` present,
+  `npm run dev` clean on http://localhost:3000; `/`, `/start`, `/dashboard` all 200.
+- **Full Gemini chain confirmed working with real output:** `/api/diagnose` 200, `/api/rebuild` 200,
+  `/api/run` 200 (a real marketing-manager JD draft). OAuth `/auth/callback` 307 → `/dashboard` 200;
+  `/api/persist-progress` 200 (fired twice — the known React strict-mode double-mount, idempotent).
+- **Latency measured (the flagged risk, in the flesh):** single calls ranged **5–36s**; rebuild alone
+  hit 26.7s and 35.7s. Three stacked ≈ a minute-plus of waiting. Unchanged by this session's fixes.
+
+### Bug found + FIXED — the first-win dead-ended on a question list (commit `7deaa5e`)
+- **Symptom (user-caught):** the "YOUR RESULT" step sometimes returned *clarifying questions*
+  ("Before I create the draft, please share…") instead of a finished draft — then the app still
+  celebrated the "win". Dead-end at the exact trust moment.
+- **Root cause:** `/api/run` is single-shot (no second turn), but its system prompt only said "Do exactly
+  what the prompt asks" — it never forbade asking questions. For underspecified tasks (draft a JD/email)
+  the model *sometimes* asks for details. Stochastic, pre-existing (NOT from the design port — the port
+  didn't touch these routes; Session 8 just got lucky).
+- **Fix:** rewrote the run system prompt — produce the COMPLETE one-shot deliverable, NEVER ask
+  questions, use clearly-marked `[placeholders]` for missing details. **Live-confirmed once** (produced a
+  JD draft, no questions) before the daily quota ran out.
+
+### Second fix — transient-failure retry + error visibility (same commit)
+- The 502s seen mid-review were **Gemini transient failures**, surfaced via added `console.error` in all
+  three route `catch` blocks (were silent). TWO modes confirmed: **503 "high demand"** (Google-side model
+  overload) and **429 "exceeded quota"** (free-tier limit).
+- Added **central retry-with-backoff** (800/1600/3200ms) in `web/lib/gemini/client.ts` for 503/429, so
+  normal spikes self-recover. Unit-tested (retry-then-success + exhaustion, fake timers). **24/24 tests
+  pass, production build green.**
+
+### 🚨 BLOCKER — free-tier daily cap makes the 40–50-user test impossible on this engine
+- **`gemini-3.6-flash` free tier = 20 requests/DAY (hard cap; confirmed exhausted this session).**
+- Each first-win = **3 calls** (diagnose + rebuild + run) → **~6 first-wins/day total, across all users**,
+  before retries or daily-loop drills. The brief needs **40–50 users**. Not feasible.
+- This **falsifies the Session-3 engine math** ("~1,500 req/day, a fraction of quota") by ~75×. The "$0
+  free tier dissolves the cost constraint" assumption is dead for this model.
+- Note: my in-session probing/testing burned part of the daily quota — but the 20/day cap is the real
+  ceiling regardless.
+
+### NEXT-SESSION resume checklist (quota resets next day)
+1. **ENGINE DECISION FIRST (blocks everything).** Recommended order:
+   (A) **Switch to a higher-limit free Gemini model** — `gemini-3.6-flash` is a premium/newest model with
+       a punishing RPD; an older/`flash-lite` tier typically gets far higher free daily limits. Likely a
+       **one-line `MODEL` change** in `web/lib/gemini/client.ts` — try this first, confirm RPD + that
+       output quality/jargon-free-ness still holds via a quick spike.
+   (B) **Wire the Groq overflow fallback** (the Session-3 plan) — much higher free limits; more work.
+   (C) **Enable Gemini billing** — trivial cost at this scale, abandons the "$0" premise.
+2. Once the engine has adequate headroom: **one clean end-to-end pass** confirming diagnose→rebuild→run
+   render real output, the run gives a *draft not questions* (re-verify the `7deaa5e` fix across a few
+   runs), and the PostHog funnel fires in order.
+3. **Then resume the plan at Task 8** (returning loop: 3 AI-graded drills + real `/dashboard` +
+   ProgressList); the Plainly system carries into the dashboard/drills.
+4. Remaining after: Tasks 9–12 (streak, checkpoint, win-card + ₹399 fake-door, event-coverage QA + Vercel
+   launch). Rotate any pasted secrets before/after the case study.
+
+### Carried-forward risks
+- **First-win latency** 5–36s/call — still open; weigh streaming / faster model / honest progress cue.
+  A higher-limit but *faster* model (fix 1A) could help both the quota AND the latency at once.
+- **Gotchas** (unchanged) — `.env.local` + `.superpowers/…/progress.md` are git-ignored (don't travel);
+  Next 16 refuses a second dev server on the same dir (kill orphans on port 3000); Bash-tool cwd sits in
+  `web/` this session, so drop the `cd web`.
 
 ---
 
