@@ -3,13 +3,15 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 19 August 2026 (Session 6)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS** (Tasks 1, 1.5 done; Task 2 code done, live
-spike pending). Both PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the 4 open forks
-from Section 0.5 are all resolved via an 11-decision grilling session (see Section 0.6). The MVP
-build is underway on branch `edtech-mvp-build` via a written implementation plan + Superpowers
-subagent-driven execution (see Section 0.7). **⚠️ Paused on office laptop — Zscaler blocks the
-Gemini spike; resume at home (see Section 0.8).**
+**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 8)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS, paused for design.** Tasks 1–7 DONE and the
+full day-0 first-win flow is **live-verified end-to-end** (Gemini, PostHog funnel, Google OAuth +
+Supabase persistence all confirmed on real infra — see Section 0.9). Both PRDs drafted
+(`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are resolved (Section
+0.6). Build is on branch `edtech-mvp-build`. **⏸ PAUSED to redesign the UI before Task 8** — the
+lean Task-1.5 visuals are too plain; user is generating a design in Figma Make + Lovable
+(`docs/design/design-generation-prompts.md`), which Claude will then port in. Resume at Task 8
+once design is chosen (see Section 0.9).
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -292,6 +294,69 @@ the Gemini API, so the Task 2 live "engine spike" (the go/no-go on the core bet)
 - Build progress lives on branch **`edtech-mvp-build`** (not merged to `main`).
 - Still-pending human setup for later tasks: Supabase `schema.sql` apply + Google OAuth provider
   (Task 7), PostHog project confirmed receiving events (Task 4+), Vercel import Root Dir = `web`.
+
+---
+
+## 0.9 SESSIONS 7–8 — Tasks 2–7 done, full first-win flow LIVE-VERIFIED, then paused for a UI redesign (19–20 Aug, home)
+
+**Where we are now:** the entire pre-signup first-win flow **plus** the sign-in/persistence handoff
+is built, reviewed, and **verified working on live infrastructure**. Build is paused by choice to
+fix the visual design before continuing to Task 8.
+
+### Tasks completed (all on `edtech-mvp-build`, each via fresh-implementer → review → fix SDD loop)
+- **Task 2 — Gemini engine.** Live spike passed (core bet GO). Model id corrected: `gemini-2.0-flash`
+  is RETIRED → now **`gemini-3.6-flash`**. `web/lib/gemini/{client,prompts}.ts`.
+- **Task 3 — Canonical event map + `track()`** (`web/lib/analytics/`). 16 events; headline
+  `first_win_completed`.
+- **Task 4 — Landing page + PostHog provider + anonymous localStorage state** (`web/lib/state/localProgress.ts`).
+- **Task 5 — Day-0 steps 2–4** (task → weak prompt → jargon-free diagnosis); `/api/diagnose`.
+- **Task 6 — Day-0 steps 5–8** (rebuild before/after → live run → inline check → win recap);
+  `/api/rebuild`, `/api/run`.
+- **Task 7 — Google OAuth at the win moment + persist** (`@supabase/ssr`, `/auth/callback`,
+  `/api/persist-progress`, `web/supabase/schema.sql`, minimal placeholder `/dashboard`).
+
+### Live end-to-end verification (20 Aug, controller browser walkthrough)
+- Full flow rendered correctly with **real Gemini output** (a usable client follow-up email).
+- **PostHog funnel confirmed in order:** `landing_view → task_started → weak_prompt_submitted →
+  prompt_rebuilt → output_generated → inline_check_answered → first_win_completed`, all as one
+  anonymous user; then on sign-in an **`Identify`** + `signup_completed` fired and every later event
+  is attributed to the real email. Anonymous→identified stitch works.
+- **Supabase rows confirmed** (queried via REST): a `profiles` row (email, `tasks_completed:1`) and a
+  matching `progress` row. OAuth code-exchange (`/auth/callback` 307) and `/api/persist-progress` 200
+  both verified in the dev server log.
+- HUMAN SETUP now DONE: `schema.sql` applied; Google OAuth provider enabled (Google Cloud client +
+  Supabase). PostHog region confirmed **US** and receiving events.
+
+### ⚠️ Risks surfaced (address at launch prep, not blockers)
+1. **First-win latency:** the 3 sequential Gemini calls took ~32s + ~33s + ~9s ≈ **~74s of waiting**
+   on the live run (earlier ~17s/call). Real drop-off risk for 40–50 users. Mitigations to weigh:
+   stream the output, faster model setting, or an honest "~30s" progress cue. Not a code bug.
+2. **`signup_completed` / persist fired twice** in dev — React strict-mode double-mount; harmless
+   (idempotent upsert), does not happen in the production build. Optional one-line effect guard later.
+
+### ⏸ Why paused — the UI redesign (current task)
+The Task-1.5 design foundation was deliberately lean (~8 tokens + 4 bare primitives); on screen it
+reads plain and under-designed for a trust-scarred persona. **Decision:** the user generates a
+better design in **Figma Make** and **Lovable** (paste-ready prompts saved at
+`docs/design/design-generation-prompts.md`), compares, and picks one. Claude then **ports the visual
+language into the existing `@theme` tokens + `components/ui` primitives + day-0 screens** — the
+working backend/logic (Gemini, PostHog, Supabase, anon state) stays untouched; we do NOT regenerate
+the app. First-win flow gets designed first; dashboard/drills inherit the system.
+
+### NEXT-SESSION resume checklist
+1. User brings back the chosen design: generated **code** + **screenshots** + **palette/font**.
+2. Claude rebuilds tokens + the 4 primitives + landing/`/start` screens to match; verifies every
+   screen in the browser.
+3. Resume the plan at **Task 8** (returning loop: 3 AI-graded drills + real `/dashboard` +
+   ProgressList). Task 8 replaces the placeholder `/dashboard` and should thread real progress into
+   persist (currently hardcoded defaults — a deferred Task-7 minor).
+4. Remaining after: Tasks 9–12 (streak, checkpoint, win-card + ₹399 fake-door, event-coverage QA +
+   Vercel launch). Secrets pasted in chat should be **rotated** before/after the case study.
+
+### Recovery notes (unchanged gotchas)
+- `.superpowers/…/progress.md` ledger and `web/.env.local` are **git-ignored** — they do NOT travel
+  between machines. Recovery = `git log` + this section; `.env.local` must be re-created from the
+  keys in the Supabase/Gemini/PostHog dashboards.
 
 ---
 
