@@ -3,15 +3,16 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 8)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS, paused for design.** Tasks 1–7 DONE and the
-full day-0 first-win flow is **live-verified end-to-end** (Gemini, PostHog funnel, Google OAuth +
-Supabase persistence all confirmed on real infra — see Section 0.9). Both PRDs drafted
-(`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are resolved (Section
-0.6). Build is on branch `edtech-mvp-build`. **⏸ PAUSED to redesign the UI before Task 8** — the
-lean Task-1.5 visuals are too plain; user is generating a design in Figma Make + Lovable
-(`docs/design/design-generation-prompts.md`), which Claude will then port in. Resume at Task 8
-once design is chosen (see Section 0.9).
+**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 9)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS, paused for design → about to port the design.**
+Tasks 1–7 DONE and the full day-0 first-win flow is **live-verified end-to-end** (Gemini, PostHog
+funnel, Google OAuth + Supabase persistence all confirmed on real infra — see Section 0.9). Both
+PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are
+resolved (Section 0.6). Build is on branch `edtech-mvp-build`. **The UI redesign is now FINALIZED**
+— user built it in Figma and committed two reference files (`docs/design/ai-coach-optimized.jsx` +
+`plainly-design-system.jsx`, brand = **"Plainly"**). **NEXT: port that visual system onto the
+already-wired app, then resume at Task 8** (see Section 0.10 for the resume plan + the 3 open design
+decisions).
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -357,6 +358,85 @@ the app. First-win flow gets designed first; dashboard/drills inherit the system
 - `.superpowers/…/progress.md` ledger and `web/.env.local` are **git-ignored** — they do NOT travel
   between machines. Recovery = `git log` + this section; `.env.local` must be re-created from the
   keys in the Supabase/Gemini/PostHog dashboards.
+
+---
+
+## 0.10 SESSION 9 — Design FINALIZED in Figma; about to port it into the app (20 Aug, home)
+
+**Where we are now:** the redesign that Session 8 paused for is **done and committed**. The user
+built the design themselves in **Figma** (not the Figma Make/Lovable generation route from Session 8)
+and committed two self-contained React reference files. Next action is the actual port. A
+brainstorming/`architectural` planning pass was started this session but **stopped before decisions
+were captured** (user's token budget for the session ran low) — so the 3 open decisions below are the
+first thing to settle next session.
+
+### Session housekeeping done
+- `git pull` on `edtech-mvp-build` (`df5ea71 → 54f2bd7`, fast-forward) — pulled Session 7–8 work
+  (API routes, Supabase/PostHog wiring, `/start` flow, tests, `design-generation-prompts.md`).
+- Local dev server confirmed running: `cd web && npm run dev` → http://localhost:3000, all routes
+  (`/`, `/start`, `/dashboard`) return 200. **Gotcha fixed:** the pull added deps (`posthog-js`,
+  `@supabase/*`) not yet installed → 500 until `npm install`; also had to kill an orphaned
+  Next dev process holding port 3000. Next 16 refuses a second dev server on the same dir.
+
+### The finalized design (committed reference files)
+| File | What it is |
+|------|------------|
+| `docs/design/ai-coach-optimized.jsx` | The **working prototype** — one self-contained React component running the full 8-screen flow with dummy `setTimeout` logic + inline `<style>` CSS. This is the visual source of truth. |
+| `docs/design/plainly-design-system.jsx` | A **design-system showcase board** — same components wrapped in a docs board: color swatches, type scale, radius/elevation/spacing, brand-mark states, component library, and all 8 screens rendered in desktop-browser + 375px phone frames. |
+
+**Finalized design decisions (baked into both files):**
+- **Brand: "Plainly"**, tagline *"AI, made plain"*. Wordmark highlights the hidden "**ai**" in
+  pl-**ai**-nly with a warm highlighter swipe.
+- **Mascot decision: NO character** — an abstract **"GrowthMark"** (ascending bars climbing to a
+  spark) that fills with progress and celebrates on Win. Grown-up, not childish.
+- **Font: Nunito** (weights 400–900).
+- **Palette:** primary indigo `#5B6CFF`, pressable button dark edge `#3B49CC`, positive `#22C55E`,
+  warm accent `#FFC24B`, danger `#FF6B6B`, canvas `#F6F7FB`, surface `#FFFFFF`, text `#1A1D2E`,
+  muted `#6B7080`, border `#E7E9F0`.
+- **Signature interaction:** Duolingo-style **pressable button** (4px darker bottom edge, presses down).
+- **Layout:** desktop = 2-col **coach rail + content**; collapses to single-column mobile at 860px.
+- **Anti-terminal:** prompts render as soft note-cards (`.code-soft`), never monospace.
+
+### The real job (what "port" means here)
+The existing `web/` app **already has the whole 8-step flow wired to real logic** — `/api/diagnose`,
+`/api/rebuild`, `/api/run`, Supabase Google OAuth, PostHog analytics, anon localStorage state — but
+with the *plain* Task-1.5 design (blue `#2563eb`, Inter, bare `Button`/`Card`/`StepShell`/`Textarea`,
+tokens in `web/app/globals.css`). **Port = lift the Figma VISUAL system onto the already-wired app,
+keeping all working logic.** Do NOT re-implement the dummy `setTimeout` logic from the JSX files.
+
+Mapping already scouted:
+- Tokens live in `web/app/globals.css` (Tailwind v4 `@theme inline`, CSS-var tokens) — swap
+  accent→indigo, add the full Plainly palette, radii, shadow; switch font Inter→Nunito in
+  `web/app/layout.tsx` (`next/font/google`).
+- Components in `web/components/ui/` (`Button`, `Card`, `StepShell`, `Textarea`) + `ConfidentialNotice`
+  get restyled; NEW components needed: `GrowthMark` (brand mark), coach-rail variant of `StepShell`,
+  chips, trust pills, Plainly `Logo`, Win celebration.
+- Screens: `web/app/page.tsx` (landing) + `web/app/start/page.tsx` (7 steps) restyle in place; all
+  fetch/state/analytics calls stay exactly as-is.
+
+### ⚠️ 3 OPEN DECISIONS to settle FIRST next session (brainstorm was cut off here)
+1. **Styling approach** — (A, recommended) re-express the design through the existing Tailwind v4
+   `@theme` tokens + typed React components (consistent, easiest to "build further"), vs (B) paste the
+   Figma's raw inline CSS verbatim into a global stylesheet with `className`-based components (exact
+   1:1 match, but two styling systems coexist).
+2. **Scope of first increment** — (A) re-skin the wired flow only (landing + 7 steps), leave
+   `/dashboard` for later; vs (B) flow + `/dashboard` together; vs (C) design-system foundation +
+   showcase page first, screens next.
+3. **Copy source** — (A, recommended) keep the research-locked copy in `web/lib/copy.ts` verbatim and
+   only add Figma's new visual elements (brand, coach rail, trust pills) with microcopy reconciled to
+   the locked source; vs (B) adopt the Figma wording as-is (it tweaks some titles, e.g. "…do for you?"
+   vs the locked "…for your work?"). NOTE the JSX also softened some diagnosis copy — reconcile against
+   `web/lib/copy.ts` + the `/api/diagnose` output, which are the research-locked source.
+
+### NEXT-SESSION resume checklist
+1. Settle the 3 decisions above (recommend A/A/A).
+2. Port tokens + font, restyle the 4 primitives, add the new components (GrowthMark, coach rail, chips,
+   pills, Logo, Win), restyle landing + `/start`. Verify every screen in the browser at
+   http://localhost:3000. Keep all API/auth/analytics/state untouched.
+3. Then resume the plan at **Task 8** (returning loop: 3 AI-graded drills + real `/dashboard` +
+   ProgressList); the new design system carries into the dashboard/drills.
+4. Remaining after: Tasks 9–12 (streak, checkpoint, win-card + ₹399 fake-door, event-coverage QA +
+   Vercel launch). Rotate the pasted secrets before/after the case study.
 
 ---
 
