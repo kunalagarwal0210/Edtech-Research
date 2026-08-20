@@ -3,16 +3,18 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 9)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS, paused for design → about to port the design.**
-Tasks 1–7 DONE and the full day-0 first-win flow is **live-verified end-to-end** (Gemini, PostHog
+**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 10)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS; Plainly design PORTED (committed), needs live
+visual + end-to-end verification on the home network, then resume at Task 8.**
+Tasks 1–7 DONE and the full day-0 first-win flow was **live-verified end-to-end** (Gemini, PostHog
 funnel, Google OAuth + Supabase persistence all confirmed on real infra — see Section 0.9). Both
 PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are
-resolved (Section 0.6). Build is on branch `edtech-mvp-build`. **The UI redesign is now FINALIZED**
-— user built it in Figma and committed two reference files (`docs/design/ai-coach-optimized.jsx` +
-`plainly-design-system.jsx`, brand = **"Plainly"**). **NEXT: port that visual system onto the
-already-wired app, then resume at Task 8** (see Section 0.10 for the resume plan + the 3 open design
-decisions).
+resolved (Section 0.6). Build is on branch `edtech-mvp-build`. The UI redesign was FINALIZED in Figma
+(brand = **"Plainly"**, refs `docs/design/ai-coach-optimized.jsx` + `plainly-design-system.jsx`) and
+is now **PORTED onto the wired app** (Session 10, commit `da6dacb`) — but Zscaler on the office laptop
+blocked the live Gemini call past "Diagnose it," so the port is **build-verified only, not yet
+eyeballed or run end-to-end.** **NEXT: on the home network, verify the flow visually + run it past
+Diagnose to the win, then resume at Task 8** (see Section 0.11).
 
 > **⚠️ READ THIS FIRST (Session 2, 18 Aug) — continuing on a different laptop.**
 > The detailed decision log lived in Claude Code *memory* on the original laptop
@@ -437,6 +439,69 @@ Mapping already scouted:
    ProgressList); the new design system carries into the dashboard/drills.
 4. Remaining after: Tasks 9–12 (streak, checkpoint, win-card + ₹399 fake-door, event-coverage QA +
    Vercel launch). Rotate the pasted secrets before/after the case study.
+
+---
+
+## 0.11 SESSION 10 — Plainly design PORTED onto the wired app (20 Aug, office laptop → continue home)
+
+**Where we are now:** the 3 open decisions from Section 0.10 were settled **A / A / A** and the port is
+**done, committed, and pushed** (`da6dacb` on `edtech-mvp-build`). The whole first-win flow now wears the
+Plainly visual system. It is **build-verified only** — `npm run build` is fully green (compile +
+TypeScript + lint; `/` and `/start` prerender clean) — but **NOT yet visually checked and NOT run past
+the "Diagnose it" step**, because the office laptop's **Zscaler proxy blocked the live Gemini call**
+again (same wall as Session 6). Switching to the home laptop to finish verification.
+
+### The 3 decisions (locked A/A/A)
+1. **Styling approach A** — re-expressed through Tailwind v4 `@theme` tokens + typed React components
+   (not raw inline-CSS verbatim). A handful of signature interactions that Tailwind can't express live
+   as small classes in `globals.css`.
+2. **Scope A** — re-skinned the **wired flow only** (landing + the 7 `/start` steps). `/dashboard`
+   left as-is for Task 8.
+3. **Copy source A** — `web/lib/copy.ts` `HERO` kept **verbatim** (research-locked). New visual
+   microcopy (eyebrow, trust pills, coach tips, ledes) added in a **separate `UI` block** in the same
+   file — locked strings untouched.
+
+### What changed (commit `da6dacb`, 13 files)
+- **`web/app/globals.css`** — full Plainly palette + radii + shadow as `@theme` tokens (indigo
+  `#5B6CFF`, edge `#3B49CC`, positive, warm `#FFC24B`, danger, canvas `#F6F7FB`, …); plus signature
+  CSS: wordmark highlighter (`.hl`), coach-rail gradient, `.code-soft` note-cards, springy progress
+  fill, hero/win gradients, `bob`/`dot` keyframes, `prefers-reduced-motion` guard. Legacy `accent`
+  token aliased to primary so nothing dangles.
+- **`web/app/layout.tsx`** — font Inter → **Nunito** (400–900) via `next/font/google`.
+- **NEW `web/components/ui/`**: `Logo.tsx` (Pl-**ai**-nly wordmark + gradient mark), `GrowthMark.tsx`
+  (ascending-bars brand mark, `lit`/`celebrate` props), `icons.tsx` (Lock, Tick, Check, GoogleMark, Dots).
+- **Restyled primitives**: `Button` (Duolingo pressable pill + `block` prop), `Card` (rounded-20 +
+  shadow + `className` passthrough), `Textarea` (soft note-card + focus ring), `StepShell` (2-col
+  **coach rail + GrowthMark + gradient progress**, new `coach`/`lede`/`onStartOver` props, collapses to
+  single column at 860px), `ConfidentialNotice` (warm lock card).
+- **Screens**: `app/page.tsx` → 2-col hero (eyebrow, trust pills, floating-card visual);
+  `app/start/page.tsx` → all 7 steps reskinned **in place** + a dedicated full-width **Win** screen.
+- **`web/lib/copy.ts`** — `HERO` untouched; appended `UI` block for the new microcopy only.
+
+### Untouched by design (logic preserved)
+Every `fetch`/`track`/`writeAnon`/OAuth/state call in `/start`, all `/api/*` routes, auth, analytics,
+anon localStorage — and `/dashboard` (Task 8). The port lifted only the visual layer; no dummy
+`setTimeout` logic from the JSX refs was copied in.
+
+### NEXT-SESSION resume checklist (home network)
+1. `git checkout edtech-mvp-build && git pull` → **re-create `web/.env.local`** (git-ignored; Gemini +
+   Supabase + PostHog keys from their dashboards) → `npm install` → `npm run dev`.
+2. **Visually verify** `/` → `/start` through all 7 steps to the win screen, incl. the 860px mobile
+   collapse. This is the human-eyes check the office laptop couldn't do.
+3. **Run the flow past "Diagnose it"** (the exact step Zscaler blocked = `/api/diagnose` → Gemini):
+   confirm diagnose → rebuild → run → win all render with **real** output, and the PostHog funnel still
+   fires in order (`landing_view → … → first_win_completed`). Since the build is green, any failure here
+   is runtime/visual, not a build break.
+4. Then **resume the plan at Task 8** (returning loop: 3 AI-graded drills + real `/dashboard` +
+   ProgressList); the Plainly system carries into the dashboard/drills.
+5. Remaining after: Tasks 9–12 (streak, checkpoint, win-card + ₹399 fake-door, event-coverage QA +
+   Vercel launch). Rotate any pasted secrets before/after the case study.
+
+### Carried-forward risks (unchanged, from Section 0.9)
+- **First-win latency** — 3 sequential Gemini calls ≈ 30–70s of waiting; this visual port didn't touch
+  it. Weigh streaming / faster model / honest progress cue at launch prep.
+- **Gotchas** — `.env.local` + the `.superpowers/…/progress.md` ledger are git-ignored (don't travel);
+  Next 16 refuses a second dev server on the same dir (kill orphans holding port 3000).
 
 ---
 
