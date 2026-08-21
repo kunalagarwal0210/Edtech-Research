@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL = "gemini-3.6-flash";
+// gemini-3.6-flash (premium) free tier caps at 20 requests/DAY — unworkable for a
+// 40–50-user test (3 calls per first-win). The flash-lite tier has a far higher free
+// daily limit and is ~10x faster (~2s vs ~30s), fixing both the quota blocker and the
+// first-win latency risk. Output quality stays on-spec (clean RCFC, jargon-free).
+const MODEL = "gemini-3.5-flash-lite";
 
 export class GeminiError extends Error {
   constructor(message: string, readonly cause?: unknown) {
