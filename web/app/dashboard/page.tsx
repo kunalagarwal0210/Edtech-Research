@@ -62,11 +62,15 @@ export default function DashboardPage() {
 
       if (!cancelled) setSaved(true);
 
-      const { data: row } = await supabase
+      const { data: row, error: progressError } = await supabase
         .from("progress")
         .select("drill1, drill2, drill3, streak, checkpoint_passed")
         .eq("user_id", user.id)
         .single();
+
+      if (progressError) {
+        console.error("[dashboard] failed to load progress:", progressError);
+      }
 
       if (!cancelled) {
         setProgress((row as Progress) ?? null);

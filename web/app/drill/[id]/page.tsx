@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -26,11 +26,6 @@ export default function DrillPage() {
   const [grade, setGrade] = useState<Grade | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (drill) track(Ev.DrillStarted, { drill_id: drill.id });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
-
   if (!drill) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-3 p-8 text-center">
@@ -45,6 +40,7 @@ export default function DrillPage() {
   async function handleSubmit() {
     const trimmed = attempt.trim();
     if (!trimmed || !drill) return;
+    track(Ev.DrillStarted, { drill_id: drill.id });
     setLoading(true);
     setError(null);
     try {
@@ -67,8 +63,8 @@ export default function DrillPage() {
             .from("progress")
             .update({ [drill.id]: true, last_active: new Date().toISOString().slice(0, 10) })
             .eq("user_id", user.id);
+          track(Ev.DrillCompleted, { drill_id: drill.id });
         }
-        track(Ev.DrillCompleted, { drill_id: drill.id });
         setSaving(false);
       }
     } catch {
