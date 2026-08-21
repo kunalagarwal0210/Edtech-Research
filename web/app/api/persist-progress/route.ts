@@ -25,15 +25,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "failed to persist progress" }, { status: 500 });
   }
 
-  const { error: progressError } = await supabase.from("progress").upsert({
-    user_id: user.id,
-    drill1: false,
-    drill2: false,
-    drill3: false,
-    streak: 0,
-    last_active: new Date().toISOString().slice(0, 10),
-    checkpoint_passed: false,
-  });
+  const { error: progressError } = await supabase.from("progress").upsert(
+    {
+      user_id: user.id,
+      drill1: false,
+      drill2: false,
+      drill3: false,
+      streak: 1,
+      last_active: new Date().toISOString().slice(0, 10),
+      checkpoint_passed: false,
+    },
+    { onConflict: "user_id", ignoreDuplicates: true }
+  );
 
   if (progressError) {
     return NextResponse.json({ error: "failed to persist progress" }, { status: 500 });

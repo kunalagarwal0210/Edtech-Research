@@ -22,5 +22,9 @@ describe("POST /api/persist-progress", () => {
     const res = await POST(req({ taskText: "JD", firstWinAt: "2026-08-19T00:00:00Z" }));
     expect(res.status).toBe(200);
     expect(upsert).toHaveBeenCalled();
+    // second upsert call is the progress table upsert (first is profiles)
+    const [progressPayload, progressOptions] = upsert.mock.calls[1];
+    expect(progressPayload).toMatchObject({ user_id: "u1", streak: 1 });
+    expect(progressOptions).toEqual({ onConflict: "user_id", ignoreDuplicates: true });
   });
 });
