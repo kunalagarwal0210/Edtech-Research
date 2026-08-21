@@ -3,11 +3,13 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 20 August 2026 (Session 11)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS; Plainly design PORTED + live-verified end-to-end
-on the home network. TWO engine fixes committed (`7deaa5e`). BLOCKED on an engine decision: the
-`gemini-3.6-flash` free tier has a HARD 20-requests/day cap — unworkable for 40–50 users. Must switch
-model / wire Groq / enable billing BEFORE any real user test. Then resume at Task 8.** (See Section 0.12.)
+**Handoff written:** 17 August 2026 · **Updated:** 21 August 2026 (Session 12)
+**Current phase:** Diamond 2 — **BUILD IN PROGRESS. Engine BLOCKER (Session 11 free-tier 20/day cap)
+RESOLVED — switched to `gemini-3.5-flash-lite` (`2990600`), live-verified end-to-end (~2s/call, killed
+BOTH the quota AND the latency risk). Tasks 8 + 9 DONE (returning loop: 3 auto-graded drills + real
+`/dashboard` + streak), each review-clean after one fix round. A Critical pre-existing Task-7 bug was
+found + fixed en route (persist wiped returning-user progress on every login). PAUSED at user request
+after Task 9. Remaining: Tasks 10–12.** (See Section 0.13.) 32/32 tests + build green on `edtech-mvp-build`.
 Tasks 1–7 DONE and the full day-0 first-win flow was **live-verified end-to-end** (Gemini, PostHog
 funnel, Google OAuth + Supabase persistence all confirmed on real infra — see Section 0.9). Both
 PRDs drafted (`problem-space-prd.md` + `solution-prd.md`); the open forks from Section 0.5 are
@@ -574,6 +576,80 @@ test**. All fixes are committed to `edtech-mvp-build` (`7deaa5e`), not yet merge
 - **Gotchas** (unchanged) — `.env.local` + `.superpowers/…/progress.md` are git-ignored (don't travel);
   Next 16 refuses a second dev server on the same dir (kill orphans on port 3000); Bash-tool cwd sits in
   `web/` this session, so drop the `cd web`.
+
+---
+
+## 0.13 SESSION 12 — engine unblocked; Tasks 8 + 9 built (returning loop + streak); Critical Task-7 bug fixed (21 Aug, home)
+
+**Where we are now:** the Session-11 engine blocker is gone and the **returning loop is built**. Tasks 8
+and 9 are done via the same subagent-driven-development loop (fresh implementer → task review → fix
+round → scoped re-review), each **review-clean after one fix round**. Build is on `edtech-mvp-build`,
+**32/32 tests + `npm run build` exit 0**, 5 commits ahead of origin at handoff time. **Paused after Task 9
+at the user's request** — Task 10 not started.
+
+### Engine BLOCKER resolved — `gemini-3.5-flash-lite` (commit `2990600`)
+- Took option A from Section 0.12: one-line `MODEL` change in `web/lib/gemini/client.ts`,
+  `gemini-3.6-flash` → **`gemini-3.5-flash-lite`** (flash-lite free tier has a far higher daily limit).
+- **Live-verified the full diagnose→rebuild→run chain end-to-end** on real infra: **~2s/call (~6.3s total)**
+  vs the prior ~30s/call (~74s) — this ALSO retired the **first-win latency risk** (Section 0.9/0.12) in the
+  same change. Output stayed on-spec (clean Role/Context/Format/Constraints, jargon-free); the run returns a
+  **complete deliverable, not a question list** — re-verified 3/3 underspecified runs (the `7deaa5e` fix holds
+  on the new model). 24/24 tests + build green at that point.
+- Groq overflow (B) and Gemini billing (C) were **not needed**. Note: `gemini-2.5-flash-lite` is retired for
+  new keys — Google's 404 points to `3.5-flash-lite`.
+
+### Task 8 — the returning loop (commits `dd0fdc9`, `47deb29`)
+- `web/lib/drills/data.ts` (3 drills, ids `drill1/2/3` mapping to the DB columns, one lever each: adding
+  context / specifying format / chaining steps), `web/app/api/grade-drill/route.ts` (TDD, mirrors the
+  `diagnose` route contract), `web/app/drill/[id]/page.tsx`, `web/components/ProgressList.tsx`, and a **real
+  `web/app/dashboard/page.tsx`** hub (Plainly design) that **preserves the live post-OAuth persist/identify/
+  clearAnon bootstrap** (guarded against strict-mode double-fire with a `useRef`).
+- Forward-refs handled without breaking the build: `StreakBadge` (Task 9) left as a commented insertion
+  point; the "Take the checkpoint" CTA renders as a non-navigating "coming up next" affordance (Task 10 wires
+  it to `/checkpoint`).
+- Fix round 1: `Ev.DrillStarted` moved from page-mount to the submit handler (was measuring views, not
+  attempts); `Ev.DrillCompleted` gated inside `if (user)`; dashboard progress-fetch error now logged.
+
+### Task 9 — streak logic + badge (commits `8d7925a`, `f8491dd`)
+- `web/lib/state/streak.ts` (pure `nextStreak`, verbatim from the plan), `web/components/StreakBadge.tsx`
+  (Plainly warm-accent pill), and dashboard wiring (adds `last_active` to the select, computes/persists the
+  streak on load, fires `Ev.StreakDay`). Display shows `Math.max(1, streak)` so an active user never sees "0".
+
+### 🐞 Critical bug FOUND + FIXED (Ruling F, commit `f8491dd`) — was hiding in "live-verified" Task-7 code
+- **`/api/persist-progress` reset the ENTIRE progress row on EVERY dashboard load**, not just at signup —
+  blind `upsert` of `{drill1/2/3:false, streak:0, last_active:today, checkpoint_passed:false}`. The dashboard
+  calls that route on every mount, *before* reading progress. Net effect: **every returning-user login wiped
+  their completed drills AND pinned the streak at 0.** The whole returning loop (Tasks 8+9) was non-functional
+  past a user's first page load.
+- **Why it hid until now:** every prior "live-verified" walkthrough only did a single signup→dashboard
+  session — **no one ever tested a second login.** In the real 40–50-user test this would have silently
+  destroyed the retention data the case study is graded on. The review loop caught it.
+- **Fix:** the progress upsert now uses `{ onConflict: "user_id", ignoreDuplicates: true }` (inserts a new
+  row once, no-ops on an existing one) and initializes `streak: 1` (signup day = day-1 activity). A regression
+  test in `web/test/api/persist.test.ts` asserts both and **fails against the old code**.
+
+### ⚠️ Carried-forward risk to close before the user test
+- The returning-loop fixes (drill persistence + streak across days) are **unit + build verified but NOT yet
+  exercised against live Supabase over two separate logins** — the exact gap that hid the Task-7 bug. Do a
+  **two-login live check** (sign in → complete a drill → sign out → sign back in on a later date, or force the
+  date) to confirm drills persist and the streak advances on real infra, BEFORE recruiting users.
+
+### NEXT-SESSION resume checklist
+1. (Recommended first) Run the **two-login live Supabase check** above to close the carried-forward risk.
+2. **Resume at Task 10** — AI-judged checkpoint + defensive `parseVerdict` rubric parser + the **A4 drills-only
+   kill-switch** (`NEXT_PUBLIC_CHECKPOINT_ENABLED`). Brief already extracted at
+   `.superpowers/sdd/2026-08-19-edtech-mvp/task-10-brief.md`. It modifies the dashboard (gate the checkpoint
+   CTA behind `checkpointEnabled()`) and routes to `/unlock` (Task 11) — handle that forward-ref like Task 8's
+   checkpoint affordance (non-navigating until Task 11 exists).
+3. Then Tasks 11 (win-card + ₹399 fake-door) and 12 (event-coverage QA + Vercel launch — **Task 12's Vercel
+   deploy is a human/controller trigger**).
+4. Rotate any pasted secrets before/after the case study.
+
+### Gotchas (unchanged)
+- `web/.env.local` + `.superpowers/…/progress.md` (the SDD ledger) are **git-ignored** — they do NOT travel
+  between machines; recreate `.env.local` from the Gemini/Supabase/PostHog dashboards, and the ledger recovers
+  from `git log` + this section. Next 16 refuses a second dev server on the same dir (kill orphans on port
+  3000). Bash-tool cwd sits in `web/` — drop the `cd web`.
 
 ---
 
