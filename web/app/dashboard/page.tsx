@@ -16,14 +16,17 @@ import { GrowthMark } from "@/components/ui/GrowthMark";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressList } from "@/components/ProgressList";
+import { StreakBadge } from "@/components/StreakBadge";
 import { Tick } from "@/components/ui/icons";
 import { DRILLS } from "@/lib/drills/data";
+import { nextStreak } from "@/lib/state/streak";
 
 type Progress = {
   drill1: boolean;
   drill2: boolean;
   drill3: boolean;
   streak: number;
+  last_active: string | null;
   checkpoint_passed: boolean;
 };
 
@@ -64,7 +67,7 @@ export default function DashboardPage() {
 
       const { data: row, error: progressError } = await supabase
         .from("progress")
-        .select("drill1, drill2, drill3, streak, checkpoint_passed")
+        .select("drill1, drill2, drill3, streak, last_active, checkpoint_passed")
         .eq("user_id", user.id)
         .single();
 
@@ -72,8 +75,26 @@ export default function DashboardPage() {
         console.error("[dashboard] failed to load progress:", progressError);
       }
 
+      let finalRow = row as Progress | null;
+
+      if (finalRow) {
+        const today = new Date().toISOString().slice(0, 10);
+        const updated = nextStreak(
+          { streak: finalRow.streak, lastActive: finalRow.last_active },
+          today
+        );
+        if (updated.streak !== finalRow.streak || updated.lastActive !== finalRow.last_active) {
+          finalRow = { ...finalRow, streak: updated.streak, last_active: updated.lastActive };
+          await supabase
+            .from("progress")
+            .update({ streak: updated.streak, last_active: updated.lastActive })
+            .eq("user_id", user.id);
+          track(Ev.StreakDay, { streak: updated.streak });
+        }
+      }
+
       if (!cancelled) {
-        setProgress((row as Progress) ?? null);
+        setProgress(finalRow);
         setLoading(false);
       }
     }
@@ -106,7 +127,7 @@ export default function DashboardPage() {
               {saved ? "Progress saved." : "Saving your progress..."}
             </p>
           </div>
-          {/* Task 9: <StreakBadge/> mounts here */}
+          {progress && <StreakBadge streak={progress.streak} />}
         </div>
 
         <Card>
