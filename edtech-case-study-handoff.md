@@ -3,14 +3,22 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 22 August 2026 (Session 14)
-**Current phase:** Diamond 2 — **BUILD CODE-COMPLETE. All 13 tasks (1, 1.5, 2–12) done on branch
-`edtech-tasks-10-12`; 51/51 tests + `npm run build` exit 0. Tasks 10 (AI-judged checkpoint) + 11
-(win-card + ₹399 fake-door) were built by an untracked Session 13 (`7f47738`, `81f3c74`) — this
-handoff was stale (said "resume at Task 10"). Session 14 built Task 12 (event-coverage guard +
-launch-checklist + 2 pre-launch hardening fixes, `dabaac6`). See Section 0.14. REMAINING: (1) the SDD
-final whole-branch review (never run — paused before it), (2) merge `edtech-tasks-10-12` → main,
-(3) the human/deploy steps (Vercel import, two-login live Supabase check, PostHog insights, recruit).**
+**Handoff written:** 17 August 2026 · **Updated:** 22 August 2026 (Session 15)
+**Current phase:** Diamond 2 — **DEPLOYED + PRE-SIGNUP FLOW LIVE-VERIFIED ON PRODUCTION.** The app is
+merged to `main` (PR #1, `706d34a`) and hosted on Vercel at **https://plain-ly.vercel.app**. Session 15
+ran the full pre-signup first-win flow end-to-end on the live URL (Claude-in-Chrome): all 3 Gemini
+routes (`/api/diagnose`, `/api/rebuild`, `/api/run`) returned 200 with real, on-spec output (the run
+gives a complete draft with `[placeholders]`, NOT a question list — the `7deaa5e` fix holds in prod);
+and **PostHog is confirmed receiving events on the US host** (`us.i.posthog.com`, all 200) straight from
+production. See Section 0.15. REMAINING (all require a signed-in session or dashboard access — NOT code):
+(1) walk the post-signup half live — Google OAuth → dashboard → drills → streak → checkpoint → fake-door;
+(2) the **two-login persistence check** (the carried Session-12 risk — still not exercised on live
+Supabase); (3) save the PostHog funnel + retention insights; (4) recruit off the 28 leads; (5) set
+baseline X% thresholds after ~10 users, then iterate + write the Final PRD. The SDD final whole-branch
+review was superseded by the PR #1 merge + this live verification.**
+_(Session-14 banner below kept for history.)_ **Old Session-14 banner: BUILD CODE-COMPLETE. All 13 tasks
+(1, 1.5, 2–12) done on branch `edtech-tasks-10-12`; 51/51 tests + `npm run build` exit 0. REMAINING:
+(1) SDD final whole-branch review, (2) merge `edtech-tasks-10-12` → main, (3) human/deploy steps.**
 _(Superseded banner below kept for history.)_ **Old Session-12 banner: Engine BLOCKER (Session 11 free-tier 20/day cap)
 RESOLVED — switched to `gemini-3.5-flash-lite` (`2990600`), live-verified end-to-end (~2s/call, killed
 BOTH the quota AND the latency risk). Tasks 8 + 9 DONE (returning loop: 3 auto-graded drills + real
@@ -718,6 +726,67 @@ each left MINOR findings deferred to final-review triage (see below).
 - `web/.env.local` + `.superpowers/…/progress.md` are **git-ignored** (don't travel; recreate from the
   Gemini/Supabase/PostHog dashboards + `git log`). Next 16 refuses a second dev server on the same dir.
   `next lint` is removed in this Next version — `npm run build` runs ESLint, or call `npx eslint` directly.
+
+---
+
+## 0.15 SESSION 15 — DEPLOYED to Vercel; pre-signup flow + PostHog live-verified on production (22 Aug)
+
+**Where we are now:** the build is **merged to `main`** (PR #1 `edtech-tasks-10-12` → main, tip `706d34a`)
+and **live on Vercel at https://plain-ly.vercel.app**. This session pulled the merge into the local clone
+(was 6 commits behind), confirmed the deploy, and ran the **entire pre-signup first-win flow end-to-end on
+the production URL** via Claude-in-Chrome. Everything a user hits before the signup wall works on real infra.
+
+### Live end-to-end verification (production URL, controller browser walkthrough)
+Walked `/` → `/start` through all 7 steps to the Win screen with a real task ("write an email to a client
+who missed the meeting"):
+- **Landing** renders correctly — Plainly wordmark, hero, GrowthMark, trust pills, confidential notice.
+- **`/api/diagnose`** → **200**, jargon-free 3-point diagnosis, ~4s (flash-lite latency as expected).
+- **`/api/rebuild`** → **200**, clean before/after with Role/Context/Format/Constraints + reusable-pattern
+  teach-back.
+- **`/api/run`** → **200**, a **complete, usable email draft with `[Client Name]`/`[Time]` placeholders —
+  NOT a clarifying-question list.** Confirms the Session-11 `7deaa5e` run-prompt fix holds in production.
+- Inline check → **Win screen** ("First win unlocked", celebrating GrowthMark) → **win-card** (interpolates
+  the real task text) + **₹399 fake-door** share loop → **Google OAuth signup wall** (renders; not crossed).
+- The **confidential-info notice** appears on every text-input screen (`/start` weak-prompt, rebuild, run).
+
+### 🎯 PostHog CONFIRMED live on production (was the open question this session)
+Network capture during the walkthrough showed **40 event POSTs to `us.i.posthog.com/i/v0/e/`, all 200** —
+so analytics is flowing from the **production** deploy and the host region is correctly **US** (the
+region-mismatch "events silently drop" risk from the launch checklist is NOT occurring). NOTE: this proves
+events are being *received*; the **funnel + retention insights still need to be built/saved in the PostHog
+dashboard** (Kunal hasn't opened it yet), and the anonymous→identified stitch can only be confirmed after a
+real signup.
+
+### What this session did NOT / could NOT verify (the real remaining work — all human/session-gated)
+1. **The post-signup half is unwalked live.** Google OAuth → `/dashboard` → 3 drills → streak → checkpoint
+   → `/unlock` fake-door were NOT exercised on production (the agent can't sign in with Kunal's Google
+   account; OAuth is a human step). Build-verified only.
+2. **Two-login persistence check STILL open** (carried from Session 12 — the exact gap that hid the Task-7
+   persist bug). Sign in → complete a drill → sign out → sign back in (force a later date) → confirm the
+   drill persists and the streak advances on live Supabase. **Do this before recruiting.**
+3. **PostHog insights not built** — save the funnel (`landing_view → first_win_completed → signup_completed
+   → checkpoint_graded → fakedoor_clicked`) and the retention insight (keyed on `signup_completed`, return
+   `streak_day`).
+4. **Env/Supabase/OAuth prod config** is implicitly working for the pre-signup half (Gemini key + PostHog
+   host are clearly set on Vercel), but the **Supabase RLS policies** and the **prod OAuth redirect allow-list**
+   are only truly exercised once step 1 above is walked.
+
+### NEXT-SESSION resume checklist
+1. **Kunal signs in on https://plain-ly.vercel.app** and walks the post-signup half once end-to-end; confirm
+   `/dashboard`, a drill grade, the streak badge, the checkpoint (AI-judged), and the ₹399 fake-door all work
+   on prod. Watch the Vercel function logs + PostHog live events while doing it.
+2. **Run the two-login persistence check** (item 2 above) — the last real correctness risk.
+3. **Build + save the PostHog funnel and retention insights**; confirm the anon→identified stitch.
+4. **Recruit ~10 users** off the 28 leads (message in their own words, "no confidential info" reminder),
+   then scale toward 40–50.
+5. After ~10 users: set the deferred success-test **X% thresholds** from baseline, watch A3 (writing vs
+   automation) + A4 (checkpoint reliability; kill-switch `NEXT_PUBLIC_CHECKPOINT_ENABLED=false` if it wobbles),
+   iterate once on the biggest drop-off, write the **Final PRD**.
+6. **Rotate the API keys/secrets** pasted into chat, before and after the case study.
+
+### Gotchas (unchanged)
+- `web/.env.local` + `.superpowers/…/progress.md` are git-ignored (don't travel; recreate from the
+  Gemini/Supabase/PostHog dashboards + `git log`). The live model is `gemini-3.5-flash-lite`.
 
 ---
 

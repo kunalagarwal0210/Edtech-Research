@@ -8,6 +8,13 @@ work that turns the built app into a live, instrumented test.
 Sections marked **[human]** need a person with dashboard access; **[deploy]**
 happens at/after the Vercel import.
 
+> **DEPLOYED — status as of Session 15 (22 Aug).** Live at **https://plain-ly.vercel.app**
+> (merged to `main`, `706d34a`). The **pre-signup half is live-verified on production**: all 3
+> Gemini routes 200 with real output, and PostHog is confirmed receiving events on the US host.
+> Boxes ticked below reflect that. **Still open (need a signed-in session / dashboard access):**
+> the post-signup walk (OAuth → dashboard → drills → checkpoint → fake-door), the two-login
+> persistence check, and saving the PostHog funnel + retention insights.
+
 ---
 
 ## 1. Code readiness (verify before deploy)
@@ -16,9 +23,11 @@ happens at/after the Vercel import.
 - [ ] `npm run build` exits 0.
 - [ ] Event-coverage test passing — proves every `Ev` in the canonical map is
       actually wired somewhere in `app/` or `components/` (no silent funnel holes).
-- [ ] Confidential-info notice (`ConfidentialNotice`) renders on every screen that
+- [x] Confidential-info notice (`ConfidentialNotice`) renders on every screen that
       takes user text: `/start` (weak prompt + rebuild), `/checkpoint`. Free-tier
       Gemini may train on prompts — this notice is required, not optional.
+      *(Session 15: verified on prod for `/start` weak-prompt + rebuild + run; `/checkpoint`
+      is behind signup, not walked live yet.)*
 - [ ] A4 kill-switch wired: `NEXT_PUBLIC_CHECKPOINT_ENABLED=false` hides the
       dashboard CTA **and** redirects a direct `/checkpoint` URL to `/dashboard`
       (drills-only fallback ships coherently).
@@ -36,16 +45,17 @@ Import the repo with **Root Directory = `web`** (research docs live at repo root
 Set every var below in the Vercel project (Production + Preview). None are
 committed (`.env.local` is git-ignored).
 
-- [ ] `GEMINI_API_KEY`
-- [ ] `NEXT_PUBLIC_SUPABASE_URL`
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- [ ] `SUPABASE_SERVICE_ROLE_KEY`
-- [ ] `NEXT_PUBLIC_POSTHOG_KEY`
-- [ ] `NEXT_PUBLIC_POSTHOG_HOST` — **must be the US host** (`https://us.i.posthog.com`);
-      a region mismatch silently drops every event.
+- [x] `GEMINI_API_KEY` *(Session 15: confirmed — all 3 Gemini routes 200 on prod.)*
+- [ ] `NEXT_PUBLIC_SUPABASE_URL` *(set, but not exercised on prod until a live signup.)*
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` *(same — verify at the post-signup walk.)*
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` *(same — used by `/api/persist-progress` post-signup.)*
+- [x] `NEXT_PUBLIC_POSTHOG_KEY` *(Session 15: confirmed — events reaching PostHog, all 200.)*
+- [x] `NEXT_PUBLIC_POSTHOG_HOST` — **must be the US host** (`https://us.i.posthog.com`);
+      a region mismatch silently drops every event. *(Session 15: confirmed US host, 40 event
+      POSTs returned 200 from the production deploy.)*
 - [ ] `NEXT_PUBLIC_CHECKPOINT_ENABLED` — leave unset (defaults ON); flip to
       `false` only if checkpoint grading wobbles in the wild.
-- [ ] Model in use is `gemini-3.5-flash-lite` (`web/lib/gemini/client.ts`) —
+- [x] Model in use is `gemini-3.5-flash-lite` (`web/lib/gemini/client.ts`) —
       the higher free-tier daily cap + ~2s latency that unblocked the test.
       `gemini-3.6-flash` (20/day) and the retired `gemini-2.0/2.5` ids must NOT
       come back.
@@ -62,7 +72,8 @@ committed (`.env.local` is git-ignored).
 
 ## 5. Analytics — PostHog **[human]**
 
-- [ ] Project is receiving events from the **production** deploy (not just dev).
+- [x] Project is receiving events from the **production** deploy (not just dev).
+      *(Session 15: confirmed via network capture — 40 events → `us.i.posthog.com`, all 200.)*
 - [ ] Anonymous → identified stitch confirmed: pre-signup events attach to the
       same person after `signup_completed` fires `Identify`.
 - [ ] Save the **funnel** insight:
