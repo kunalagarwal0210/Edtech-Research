@@ -5,9 +5,10 @@
 // enforces that gate before linking here). Auth-gated the same way the
 // dashboard is.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { DRILLS } from "@/lib/drills/data";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
@@ -29,6 +30,7 @@ const RUBRIC_LABELS: Record<keyof Verdict["items"], string> = {
 
 export default function CheckpointPage() {
   const router = useRouter();
+  const userIdRef = useRef<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [finalPrompt, setFinalPrompt] = useState("");
   const [output, setOutput] = useState("");
@@ -46,7 +48,7 @@ export default function CheckpointPage() {
       return;
     }
     let cancelled = false;
-    async function checkAuth() {
+    async function checkAccess() {
       const supabase = getBrowserSupabase();
       const {
         data: { user },
@@ -55,9 +57,31 @@ export default function CheckpointPage() {
         router.replace("/");
         return;
       }
-      if (!cancelled) setCheckingAuth(false);
+      userIdRef.current = user.id;
+
+      // The checkpoint sits behind all 3 drills and is a one-time gate. The
+      // dashboard only links here when that holds, but a direct URL would
+      // otherwise bypass the funnel — so enforce both on the route itself.
+      const { data: row } = await supabase
+        .from("progress")
+        .select("drill1, drill2, drill3, checkpoint_passed")
+        .eq("user_id", user.id)
+        .single();
+      if (cancelled) return;
+      if (row?.checkpoint_passed) {
+        router.replace("/unlock");
+        return;
+      }
+      const allDrillsDone = DRILLS.every(
+        (d) => (row as Record<string, boolean> | null)?.[d.id],
+      );
+      if (!allDrillsDone) {
+        router.replace("/dashboard");
+        return;
+      }
+      setCheckingAuth(false);
     }
-    checkAuth();
+    checkAccess();
     return () => {
       cancelled = true;
     };
@@ -82,17 +106,28 @@ export default function CheckpointPage() {
       track(Ev.CheckpointGraded, { passed: data.passed });
       if (data.passed) {
         setSaving(true);
+        const userId = userIdRef.current;
+        // Only advance to /unlock once the pass is actually recorded — if the
+        // session lapsed or RLS blocks the write, routing anyway would lose the
+        // pass silently (dashboard would keep showing "Take the checkpoint").
         const supabase = getBrowserSupabase();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from("progress")
-            .update({ checkpoint_passed: true })
-            .eq("user_id", user.id);
-        }
+        const { data: updated, error: saveError } = userId
+          ? await supabase
+              .from("progress")
+              .update({ checkpoint_passed: true })
+              .eq("user_id", userId)
+              .select("user_id")
+          : { data: null, error: new Error("no authenticated user") };
         setSaving(false);
+        if (saveError || !updated || updated.length === 0) {
+          if (saveError) {
+            console.error("[checkpoint] failed to persist pass:", saveError);
+          }
+          setError(
+            "You passed, but we couldn't save it. Please refresh and try again.",
+          );
+          return;
+        }
         router.push("/unlock");
       }
     } catch {

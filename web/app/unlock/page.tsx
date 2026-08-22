@@ -6,7 +6,9 @@
 // email capture is a waitlist stored as a PostHog person property (no
 // Supabase table for a throwaway fake-door — see task-11 ruling).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
@@ -19,10 +21,44 @@ import { Ev } from "@/lib/analytics/events";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function UnlockPage() {
+  const router = useRouter();
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [emailError, setEmailError] = useState(false);
+
+  // The fake-door click is the WTP signal the whole experiment measures, so
+  // only funnel-completers may reach it — off-funnel direct hits would inflate
+  // the conversion rate. Gate on auth + a persisted checkpoint pass.
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAccess() {
+      const supabase = getBrowserSupabase();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/");
+        return;
+      }
+      const { data: row } = await supabase
+        .from("progress")
+        .select("checkpoint_passed")
+        .eq("user_id", user.id)
+        .single();
+      if (cancelled) return;
+      if (!row?.checkpoint_passed) {
+        router.replace("/dashboard");
+        return;
+      }
+      setCheckingAccess(false);
+    }
+    checkAccess();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   function handleUnlockClick() {
     track(Ev.FakedoorClicked);
@@ -38,6 +74,14 @@ export default function UnlockPage() {
     setEmailError(false);
     setPersonProperties({ waitlist_email: trimmed });
     setSubmitted(true);
+  }
+
+  if (checkingAccess) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm font-semibold text-muted">Loading...</p>
+      </main>
+    );
   }
 
   return (
