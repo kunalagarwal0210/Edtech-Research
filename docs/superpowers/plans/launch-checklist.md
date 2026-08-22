@@ -12,7 +12,7 @@ happens at/after the Vercel import.
 
 ## 1. Code readiness (verify before deploy)
 
-- [ ] `npm test` green (currently 36/36 including the event-coverage guard).
+- [ ] `npm test` green (currently 51/51 including the event-coverage guard).
 - [ ] `npm run build` exits 0.
 - [ ] Event-coverage test passing — proves every `Ev` in the canonical map is
       actually wired somewhere in `app/` or `components/` (no silent funnel holes).
