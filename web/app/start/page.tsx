@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { GrowthMark } from "@/components/ui/GrowthMark";
+import { WinCard } from "@/components/WinCard";
 import { Check, Tick, GoogleMark } from "@/components/ui/icons";
 import { HERO, UI } from "@/lib/copy";
 import { writeAnon } from "@/lib/state/localProgress";
@@ -418,6 +419,7 @@ export default function StartPage() {
           </p>
 
           <div className="mx-auto max-w-[420px]">
+            <WinCard task={taskText} />
             <button
               type="button"
               onClick={handleSaveProgress}

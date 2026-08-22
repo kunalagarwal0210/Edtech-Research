@@ -1,9 +1,11 @@
 import type { PostHog } from "posthog-js";
 import { Ev } from "./events";
 
-let client: Pick<PostHog, "capture" | "identify"> | null = null;
+let client: Pick<PostHog, "capture" | "identify" | "setPersonProperties"> | null = null;
 
-export function setPosthog(instance: Pick<PostHog, "capture" | "identify"> | null) {
+export function setPosthog(
+  instance: Pick<PostHog, "capture" | "identify" | "setPersonProperties"> | null
+) {
   client = instance;
 }
 // test seam
@@ -15,4 +17,8 @@ export function track(event: Ev, props?: Record<string, unknown>): void {
 
 export function identifyUser(id: string, props?: Record<string, unknown>): void {
   client?.identify(id, props);
+}
+
+export function setPersonProperties(props: Record<string, unknown>): void {
+  client?.setPersonProperties?.(props);
 }
