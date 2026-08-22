@@ -14,10 +14,15 @@ import { Lock, Tick } from "@/components/ui/icons";
 import { track, setPersonProperties } from "@/lib/analytics/track";
 import { Ev } from "@/lib/analytics/events";
 
+// Loose email shape check — enough to keep obvious garbage out of the WTP
+// waitlist signal this page exists to capture, without over-validating.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function UnlockPage() {
   const [unlocked, setUnlocked] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState(false);
 
   function handleUnlockClick() {
     track(Ev.FakedoorClicked);
@@ -26,7 +31,11 @@ export default function UnlockPage() {
 
   function handleEmailSubmit() {
     const trimmed = email.trim();
-    if (!trimmed) return;
+    if (!EMAIL_RE.test(trimmed)) {
+      setEmailError(true);
+      return;
+    }
+    setEmailError(false);
     setPersonProperties({ waitlist_email: trimmed });
     setSubmitted(true);
   }
@@ -75,10 +84,18 @@ export default function UnlockPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(false);
+                    }}
                     placeholder="you@work.com"
                     className="w-full rounded-lg border-2 border-border bg-surface px-[18px] py-3 text-base leading-relaxed text-text outline-none transition-[border-color,box-shadow] placeholder:text-muted focus:border-primary focus:shadow-[0_0_0_3px_rgba(91,108,255,0.15)]"
                   />
+                  {emailError && (
+                    <p className="text-left text-[13px] font-semibold text-danger">
+                      Please enter a valid email address.
+                    </p>
+                  )}
                   <Button block onClick={handleEmailSubmit} disabled={!email.trim()}>
                     Notify me
                   </Button>

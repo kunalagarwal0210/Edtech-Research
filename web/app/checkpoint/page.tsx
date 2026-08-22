@@ -16,6 +16,7 @@ import { ConfidentialNotice } from "@/components/ConfidentialNotice";
 import { Tick } from "@/components/ui/icons";
 import { track } from "@/lib/analytics/track";
 import { Ev } from "@/lib/analytics/events";
+import { checkpointEnabled } from "@/lib/meta";
 import type { Verdict } from "@/lib/grading/parseVerdict";
 
 const RUBRIC_LABELS: Record<keyof Verdict["items"], string> = {
@@ -37,6 +38,13 @@ export default function CheckpointPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    // A4 kill-switch: when the checkpoint is disabled (drills-only mode) the
+    // dashboard hides its CTA, but a direct /checkpoint URL would still work —
+    // enforce the gate on the route itself too.
+    if (!checkpointEnabled()) {
+      router.replace("/dashboard");
+      return;
+    }
     let cancelled = false;
     async function checkAuth() {
       const supabase = getBrowserSupabase();
