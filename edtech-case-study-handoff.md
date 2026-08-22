@@ -3,8 +3,15 @@
 **Owner:** Kunal Agarwal
 **Assignment:** PM course, Week 5 / Cohort 8 / Case Study 4
 **Deadline:** 26 August 2026
-**Handoff written:** 17 August 2026 · **Updated:** 21 August 2026 (Session 12)
-**Current phase:** Diamond 2 — **BUILD IN PROGRESS. Engine BLOCKER (Session 11 free-tier 20/day cap)
+**Handoff written:** 17 August 2026 · **Updated:** 22 August 2026 (Session 14)
+**Current phase:** Diamond 2 — **BUILD CODE-COMPLETE. All 13 tasks (1, 1.5, 2–12) done on branch
+`edtech-tasks-10-12`; 51/51 tests + `npm run build` exit 0. Tasks 10 (AI-judged checkpoint) + 11
+(win-card + ₹399 fake-door) were built by an untracked Session 13 (`7f47738`, `81f3c74`) — this
+handoff was stale (said "resume at Task 10"). Session 14 built Task 12 (event-coverage guard +
+launch-checklist + 2 pre-launch hardening fixes, `dabaac6`). See Section 0.14. REMAINING: (1) the SDD
+final whole-branch review (never run — paused before it), (2) merge `edtech-tasks-10-12` → main,
+(3) the human/deploy steps (Vercel import, two-login live Supabase check, PostHog insights, recruit).**
+_(Superseded banner below kept for history.)_ **Old Session-12 banner: Engine BLOCKER (Session 11 free-tier 20/day cap)
 RESOLVED — switched to `gemini-3.5-flash-lite` (`2990600`), live-verified end-to-end (~2s/call, killed
 BOTH the quota AND the latency risk). Tasks 8 + 9 DONE (returning loop: 3 auto-graded drills + real
 `/dashboard` + streak), each review-clean after one fix round. A Critical pre-existing Task-7 bug was
@@ -650,6 +657,67 @@ at the user's request** — Task 10 not started.
   between machines; recreate `.env.local` from the Gemini/Supabase/PostHog dashboards, and the ledger recovers
   from `git log` + this section. Next 16 refuses a second dev server on the same dir (kill orphans on port
   3000). Bash-tool cwd sits in `web/` — drop the `cd web`.
+
+---
+
+## 0.14 SESSIONS 13–14 — Tasks 10–12 done; BUILD CODE-COMPLETE (21–22 Aug)
+
+**Where we are now:** all 13 build tasks are code-complete on branch **`edtech-tasks-10-12`**
+(branched off `main` at `09873d6`, which already held Tasks 1–9). **51/51 tests + `npm run build`
+exit 0.** What's left is process/human, not code: the final whole-branch review, the merge to main,
+and the deploy/recruit steps.
+
+### ⚠️ The handoff was stale — Session 13 was untracked
+Session 13 built **Task 10** and **Task 11** on `edtech-tasks-10-12`, committed + pushed, but **never
+updated this handoff** (it still said "resume at Task 10"). Recovered from `git log` + the SDD ledger
+(`.superpowers/sdd/2026-08-19-edtech-mvp/progress.md`, git-ignored, lives in the worktree). Both tasks
+went through the SDD implementer→review→fix loop and are **review-clean (spec ✅, quality approved)**;
+each left MINOR findings deferred to final-review triage (see below).
+
+- **Task 10 — AI-judged checkpoint** (`7f47738`): `web/app/api/grade-checkpoint/route.ts`,
+  `web/app/checkpoint/page.tsx`, `web/lib/grading/parseVerdict.ts` (defensive rubric parser, TDD),
+  `web/lib/meta.ts` (`checkpointEnabled()` = the **A4 drills-only kill-switch**,
+  `NEXT_PUBLIC_CHECKPOINT_ENABLED`). Live curl strong-pass/weak-fail confirmed by Session 13.
+- **Task 11 — win-card + ₹399 fake-door** (`81f3c74`): `web/components/WinCard.tsx`,
+  `web/app/unlock/page.tsx`, `+share events in `web/lib/analytics/track.ts` (`setPersonProperties`),
+  win-panel hook in `web/app/start/page.tsx`. Fake-door email → PostHog person property (Ruling R2,
+  no Supabase table).
+
+### Session 14 — Task 12 built (`dabaac6`)
+- **`web/test/analytics/event-coverage.test.ts`** — asserts every `Ev` in the canonical map (16) is
+  referenced in `app/` or `components/`. All 16 already wired → +16 green assertions (35 → **51 tests**).
+  (Note: `import.meta.url` isn't a `file:` scheme under this vitest CJS loader — resolve dirs from
+  `process.cwd()` / the vitest root instead.)
+- **`docs/superpowers/plans/launch-checklist.md`** — the human/deploy list (Vercel env incl. US
+  PostHog host + `gemini-3.5-flash-lite`, Supabase RLS, funnel+retention insights, the two-login
+  persistence check, 28-lead recruiting, baseline-threshold plan, secret rotation).
+- **Two pre-launch hardening fixes folded in** (were deferred MINORs from Task 10/11 review triage):
+  (a) `/checkpoint` now honors `checkpointEnabled()` on the **route** itself (direct URL no longer
+  bypasses the A4 kill-switch); (b) `/unlock` validates email **shape** before recording the WTP
+  waitlist signal.
+- Task 12 **Steps 3–4** (live-URL funnel walk + building the PostHog insights) are **human/deploy-time**
+  (Ruling R4) — deferred to the Vercel deploy.
+
+### NEXT-SESSION resume checklist
+1. **SDD final whole-branch review** — never run (Session 13 paused before it, Session 14 built Task 12
+   but did not run it). Review `main..edtech-tasks-10-12` for cross-task integration + triage the carried
+   MINORs (2 already fixed in `dabaac6`; the rest: checkpoint page discards the supabase `.update()`
+   result / routes to `/unlock` regardless — drill-page carry-over pattern; clipboard failure on the
+   win card is silently swallowed — MVP-acceptable).
+2. **Merge `edtech-tasks-10-12` → `main`** once the review is clean. (Both `main` and the old
+   `edtech-mvp-build` sit at `09873d6`; this branch is the live tip.)
+3. **Human/deploy steps** (see `launch-checklist.md`): Vercel import (Root Dir = `web`) + env vars;
+   the **two-login live Supabase check** (the carried risk from Session 12 — confirms drills persist +
+   streak advances across two logins; this is the exact gap that hid the Task-7 bug); build the PostHog
+   funnel + retention insights; recruit off the 28 leads.
+4. After ~10 users: set the deferred success-test X% thresholds from baseline; watch A3 (writing vs
+   automation) + A4 (checkpoint grading reliability); iterate once; write the Final PRD.
+5. Rotate any pasted secrets before/after the case study.
+
+### Gotchas (unchanged)
+- `web/.env.local` + `.superpowers/…/progress.md` are **git-ignored** (don't travel; recreate from the
+  Gemini/Supabase/PostHog dashboards + `git log`). Next 16 refuses a second dev server on the same dir.
+  `next lint` is removed in this Next version — `npm run build` runs ESLint, or call `npx eslint` directly.
 
 ---
 
