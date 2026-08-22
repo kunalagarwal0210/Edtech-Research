@@ -20,6 +20,7 @@ import { StreakBadge } from "@/components/StreakBadge";
 import { Tick } from "@/components/ui/icons";
 import { DRILLS } from "@/lib/drills/data";
 import { nextStreak } from "@/lib/state/streak";
+import { checkpointEnabled } from "@/lib/meta";
 
 type Progress = {
   drill1: boolean;
@@ -108,6 +109,9 @@ export default function DashboardPage() {
 
   const doneDrills = DRILLS.filter((d) => progress?.[d.id]);
   const tasksYouCanNowDo = doneDrills.map((d) => d.title);
+  if (progress?.checkpoint_passed) {
+    tasksYouCanNowDo.push("A real task, start to finish");
+  }
   const allDrillsDone = DRILLS.every((d) => progress?.[d.id]);
 
   return (
@@ -173,7 +177,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {allDrillsDone && (
+        {allDrillsDone && checkpointEnabled() && !progress?.checkpoint_passed && (
           <Card className="border-primary/25 bg-primary/5">
             <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-primary">
               Coming up next
@@ -181,10 +185,9 @@ export default function DashboardPage() {
             <p className="mb-4 text-[15px] font-bold text-text">
               You&apos;ve done all 3 drills. The checkpoint is next.
             </p>
-            {/* Task 10 wires this to /checkpoint */}
-            <Button block disabled>
-              Take the checkpoint (coming soon)
-            </Button>
+            <Link href="/checkpoint">
+              <Button block>Take the checkpoint →</Button>
+            </Link>
           </Card>
         )}
       </main>
